@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overflowia AI - IA e Comunidade</title>
+    <!-- CSS Principal (Base e Chat) -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Fontes e Ícones -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-layout">
+        
+        <!-- SIDEBAR (MENU LATERAL) -->
+        <aside class="side-panel">
+            <div class="brand">
+                <div class="brand-icon"><i class="fas fa-brain"></i></div>
+                <h2>Overflowia.AI</h2>
+            </div>
+            
+            <!-- Grupo de Navegação Principal -->
+            <div class="nav-buttons">
+                <button class="nav-btn primary-btn">
+                    <i class="fas fa-robot"></i> Chat com IA
+                </button>
+                <a href="forum.html" class="nav-btn secondary-btn">
+                    <i class="fas fa-users"></i> Fórum da Comunidade
+                </a>
+            </div>
+
+            <div class="history-section">
+                <h3>Histórico Recente</h3>
+                <ul class="chat-list">
+                    <li class="active"><i class="far fa-message"></i> Como centralizar uma div?</li>
+                    <li><i class="far fa-message"></i> Erro de CORS no Node.js</li>
+                    <li><i class="far fa-message"></i> Estrutura de dados em Python</li>
+                    <li><i class="far fa-message"></i> Dicas para o meu PFC</li>
+                </ul>
+            </div>
+
+            <div class="user-profile">
+                <div class="avatar"><i class="fas fa-user"></i></div>
+                <div class="user-info">
+                    <span class="user-name">Aluno PFC</span>
+                    <span class="user-role">Desenvolvedor</span>
+                </div>
+                <i class="fas fa-cog config-btn"></i>
+            </div>
+        </aside>
+
+        <!-- ÁREA PRINCIPAL DO CHAT -->
+        <main class="chat-container">
+            
+            <header class="top-bar">
+                <div class="current-chat-title">
+                    <h1>Como centralizar uma div?</h1>
+                    <span class="model-badge">Overflowia Modelo v2.0</span>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn"><i class="fas fa-share-alt"></i></button>
+                    <button class="icon-btn"><i class="fas fa-download"></i></button>
+                </div>
+            </header>
+
+            <div class="messages-area">
+                <div class="message user-message">
+                    <div class="message-content">
+                        <p>Oi, estou fazendo meu projeto final. Como posso centralizar uma div perfeitamente na tela usando CSS?</p>
+                    </div>
+                </div>
+
+                <div class="message ai-message">
+                    <div class="avatar-ai"><i class="fas fa-robot"></i></div>
+                    <div class="message-content">
+                        <p>Olá! Que legal o seu PFC. Centralizar uma div é um clássico da programação web. A forma mais moderna e eficiente hoje em dia é usar <strong>Flexbox</strong>. Veja o exemplo abaixo:</p>
+                        
+                        <div class="code-block">
+                            <div class="code-header">
+                                <span>CSS (Flexbox)</span>
+                                <i class="far fa-copy"></i>
+                            </div>
+                            <code>
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <div class="input-box">
+                    <button class="attach-btn"><i class="fas fa-paperclip"></i></button>
+                    <textarea placeholder="Digite sua dúvida de programação aqui..." rows="1"></textarea>
+                    <button class="send-btn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+                <div class="footer-text">
+                    Overflowia AI pode cometer erros. Considere verificar informações importantes no Fórum.
+                </div>
+            </div>
+
+        </main>
+    </div>
+</body>
+</html>

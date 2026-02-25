@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fórum - Overflowia AI</title>
+    <link rel="stylesheet" href="forum.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-layout">
+        
+        <!-- SIDEBAR (Igual a do index.html para manter consistência) -->
+        <aside class="side-panel">
+            <div class="brand">
+                <div class="brand-icon"><i class="fas fa-brain"></i></div>
+                <h2>Overflowia.AI</h2>
+            </div>
+            
+            <div class="nav-buttons">
+                <!-- Agora o botão do Fórum que é o destacado (primary) -->
+                <a href="index.html" class="nav-btn secondary-btn">
+                    <i class="fas fa-robot"></i> Voltar para IA
+                </a>
+                <button class="nav-btn primary-btn">
+                    <i class="fas fa-users"></i> Comunidade / Fórum
+                </button>
+            </div>
+
+            <div class="history-section">
+                <h3>Tags Populares</h3>
+                <ul class="chat-list">
+                    <li><i class="fas fa-hashtag"></i> javascript</li>
+                    <li><i class="fas fa-hashtag"></i> python</li>
+                    <li><i class="fas fa-hashtag"></i> css</li>
+                    <li><i class="fas fa-hashtag"></i> react</li>
+                </ul>
+            </div>
+
+            <div class="user-profile">
+                <div class="avatar"><i class="fas fa-user"></i></div>
+                <div class="user-info">
+                    <span class="user-name">Aluno PFC</span>
+                    <span class="user-role">Desenvolvedor</span>
+                </div>
+                <i class="fas fa-cog config-btn"></i>
+            </div>
+        </aside>
+
+        <!-- ÁREA PRINCIPAL DO FÓRUM -->
+        <main class="chat-container">
+            
+            <!-- Header do Fórum -->
+            <header class="forum-header">
+                <div>
+                    <h1>Todas as Perguntas</h1>
+                    <p class="subtitle">1,204 perguntas feitas pela comunidade</p>
+                </div>
+                <button class="ask-btn">Fazer Pergunta</button>
+            </header>
+
+            <!-- Lista de Filtros -->
+            <div class="forum-filters">
+                <button class="active">Mais recentes</button>
+                <button>Mais votadas</button>
+                <button>Sem resposta</button>
+            </div>
+
+            <!-- Feed de Perguntas -->
+            <div class="forum-feed">
+                
+                <!-- Pergunta 1 -->
+                <div class="question-card">
+                    <div class="stats">
+                        <div class="stat-item"><span class="votes">12</span> votos</div>
+                        <div class="stat-item answers has-answers"><i class="fas fa-check"></i> 3 resps</div>
+                        <div class="stat-item views">45 views</div>
+                    </div>
+                    <div class="question-content">
+                        <h3><a href="#">Como fazer deploy de um app Node.js no Heroku em 2026?</a></h3>
+                        <p>Estou tentando subir meu projeto final, mas o Heroku mudou algumas políticas de build. Alguém sabe como configurar o arquivo Procfile corretamente agora?</p>
+                        <div class="question-footer">
+                            <div class="tags">
+                                <span class="tag">node.js</span>
+                                <span class="tag">heroku</span>
+                                <span class="tag">deploy</span>
+                            </div>
+                            <div class="author-info">
+                                <i class="fas fa-user-circle"></i> Marcos_Dev perguntou há 2 horas
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pergunta 2 -->
+                <div class="question-card">
+                    <div class="stats">
+                        <div class="stat-item"><span class="votes">5</span> votos</div>
+                        <div class="stat-item answers">0 resps</div>
+                        <div class="stat-item views">12 views</div>
+                    </div>
+                    <div class="question-content">
+                        <h3><a href="#">Erro de CORS ao tentar conectar frontend com backend Flask</a></h3>
+                        <p>Estou recebendo o erro "Access-Control-Allow-Origin" no meu console quando o React tenta puxar os dados do meu servidor Flask. Como resolvo?</p>
+                        <div class="question-footer">
+                            <div class="tags">
+                                <span class="tag">python</span>
+                                <span class="tag">flask</span>
+                                <span class="tag">cors</span>
+                                <span class="tag">react</span>
+                            </div>
+                            <div class="author-info">
+                                <i class="fas fa-user-circle"></i> Julia_Tech perguntou há 5 horas
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,197 @@
+/* ========================================================
+   ESTILOS EXCLUSIVOS DA TELA DE LOGIN (login.css)
+   ======================================================== */
+
+.login-body {
+    background-color: var(--bg-main); /* Puxa do style.css principal */
+    color: var(--text-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+/* O Segredo de Design: Esse "ambient-glow" faz uma fumaça roxa e ciano desfocada ao fundo! */
+.ambient-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(123, 97, 255, 0.15) 0%, rgba(0, 210, 211, 0.1) 40%, transparent 70%);
+    transform: translate(-50%, -50%);
+    filter: blur(80px);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.login-wrapper {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 440px;
+    padding: 20px;
+}
+
+/* A Caixa (Card) de Login Central */
+.login-box {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    padding: 40px 40px 30px;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+.login-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+.brand-icon-lg {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--accent-color), #00d2d3);
+    color: white;
+    border-radius: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px;
+    box-shadow: 0 8px 25px rgba(123, 97, 255, 0.3);
+}
+.login-brand h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.5px;}
+
+.login-header { text-align: center; margin-bottom: 30px; }
+.login-header h3 { font-size: 18px; margin-bottom: 8px; font-weight: 500;}
+.login-header p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; padding: 0 10px; }
+
+/* Configurações do Formulário de inputs */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.input-group label { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+.forgot-pwd { font-size: 12px; color: var(--accent-color); text-decoration: none; transition: 0.2s; }
+.forgot-pwd:hover { text-decoration: underline; color: var(--accent-hover); }
+
+/* Ícones embutidos dentro dos inputs! Estilo super atual! */
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrapper i {
+    position: absolute;
+    left: 14px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    pointer-events: none; /* Deixa o clique passar pro input por trás dele */
+}
+
+.input-wrapper input {
+    width: 100%;
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    color: white;
+    padding: 12px 14px 12px 38px; /* Padding-left é 38 pra dar espaço pro ícone! */
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: 0.2s;
+}
+
+.input-wrapper input:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(123, 97, 255, 0.15);
+}
+
+.input-wrapper input::placeholder { color: rgba(160, 160, 165, 0.5); }
+
+/* Botões Inferiores */
+.btn-login {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 5px;
+    transition: 0.2s;
+}
+
+.btn-login:hover {
+    background-color: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(123, 97, 255, 0.3);
+}
+
+.login-divider {
+    text-align: center;
+    position: relative;
+    margin: 25px 0;
+}
+.login-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    border-top: 1px solid var(--border-color);
+    z-index: 1;
+}
+.login-divider span {
+    position: relative;
+    z-index: 2;
+    background-color: var(--bg-surface);
+    padding: 0 10px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.create-account { text-align: center; }
+.create-account p { font-size: 13px; color: var(--text-secondary); margin-bottom: 10px;}
+.btn-signup {
+    display: block;
+    text-align: center;
+    color: white;
+    text-decoration: none;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.btn-signup:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: var(--text-secondary);
+}

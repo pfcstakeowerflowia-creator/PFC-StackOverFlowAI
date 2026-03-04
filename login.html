@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Overflowia AI</title>
+    <!-- CSS base para buscar as variáveis de cores globais -->
+    <link rel="stylesheet" href="style.css"> 
+    <!-- CSS específico do login -->
+    <link rel="stylesheet" href="login.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="login-body">
+    
+    <!-- Fundo estilizado brilhante (Estilo Cyberpunk / Web3) -->
+    <div class="ambient-glow"></div>
+
+    <div class="login-wrapper">
+        <div class="login-box">
+            
+            <!-- Logo Grande Centralizada -->
+            <div class="login-brand">
+                <div class="brand-icon-lg"><i class="fas fa-brain"></i></div>
+                <h2>Overflowia.AI</h2>
+            </div>
+
+            <div class="login-header">
+                <h3>Acesse sua Conta</h3>
+                <p>Faça login para utilizar a nossa Inteligência Artificial e publicar no Fórum RAG da comunidade.</p>
+            </div>
+
+            <!-- O formulário aponta para index.html para simular o login com sucesso -->
+            <form action="index.html" class="login-form">
+                
+                <div class="input-group">
+                    <label for="email">E-mail Acadêmico / Corporativo</label>
+                    <div class="input-wrapper">
+                        <i class="far fa-envelope"></i>
+                        <input type="email" id="email" placeholder="aluno@instituicao.edu.br" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="label-row">
+                        <label for="password">Senha</label>
+                        <a href="#" class="forgot-pwd">Esqueceu a senha?</a>
+                    </div>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login">
+                    Entrar na Plataforma <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="login-divider">
+                <span>OU</span>
+            </div>
+
+            <!-- Botão Secundário para criar conta -->
+            <div class="create-account">
+                <p>Ainda não faz parte do fórum?</p>
+                <a href="#" class="btn-signup">Criar Conta Gratuita</a>
+            </div>
+
+        </div>
+    </div>
+</div>
+  
+    
+    <script src="login.js"></script>
+</body>
+</html>

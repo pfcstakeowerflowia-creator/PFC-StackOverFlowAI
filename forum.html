@@ -3,16 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fórum - Overflowia AI</title>
+    <title>Fórum Dinâmico - Overflowia</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="forum.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="app-layout">
         
-        <!-- SIDEBAR -->
         <aside class="side-panel">
             <div class="brand">
                 <div class="brand-icon"><i class="fas fa-brain"></i></div>
@@ -20,136 +18,36 @@
             </div>
             
             <div class="nav-buttons">
-                <a href="index.html" class="nav-btn secondary-btn">
-                    <i class="fas fa-robot"></i> Chat com IA
-                </a>
-                <button class="nav-btn primary-btn">
-                    <i class="fas fa-users"></i> Fórum da Comunidade
-                </button>
+                <a href="index.html" class="nav-btn secondary-btn"><i class="fas fa-robot"></i> Chat com IA</a>
+                <button class="nav-btn primary-btn"><i class="fas fa-users"></i> Fórum de Postagem</button>
             </div>
 
-            <div class="history-section">
-                <h3>Tags Populares</h3>
-                <ul class="chat-list">
-                    <li><i class="fas fa-hashtag"></i> nodejs</li>
-                    <li><i class="fas fa-hashtag"></i> python</li>
-                    <li><i class="fas fa-hashtag"></i> express</li>
-                    <li><i class="fas fa-hashtag"></i> react</li>
-                </ul>
-            </div>
-
-           <div id="sidebar-auth-container">
-
-                <div class="avatar"><i class="fas fa-user"></i></div>
-                <div class="user-info">
-                    <span class="user-name">Aluno PFC</span>
-                    <span class="user-role">Desenvolvedor</span>
-                </div>
-                <i class="fas fa-cog config-btn"></i>
-            </div>
+            <!-- Area Injetada RAG Base Lateral -->
+            <div id="sidebar-auth-wrapper"></div>
         </aside>
 
-        <!-- ÁREA PRINCIPAL DO FÓRUM -->
         <main class="chat-container">
             
             <header class="forum-header">
                 <div>
-                    <h1>Todas as Perguntas</h1>
-                    <p class="subtitle">Base de Conhecimento e Comunidade</p>
+                    <h1>Todas as Perguntas da Base Local</h1>
+                    <p class="subtitle">Alimentando comunidade e Database Interno de AI</p>
                 </div>
-                <a href="ask.html" class="ask-btn text-center text-decoration-none">Fazer Pergunta</a>
-                
-
+                <!-- Action do Novo Id Para Validar Clique -->
+                <a href="#" id="ask-button" class="ask-btn">Submeter Nova Pergunta RAG</a>
             </header>
 
             <div class="forum-filters">
-                <button class="active">Mais recentes</button>
-                <button>Mais votadas</button>
-                <button>Sem resposta</button>
-                <button><i class="fas fa-check-circle text-green"></i> Resolvidas (RAG)</button>
+                <button class="active">Mais recentes DB</button>
+                <button>Relevantes Comunidade</button>
+                <button><i class="fas fa-check-circle text-green"></i> Sucesso de IA RAG Resolvida</button>
             </div>
 
-            <div class="forum-feed">
-                
-                <!-- PERGUNTA 1: Resolvida (Com Melhor Resposta) -->
-                <div class="question-card solved">
-                    <div class="stats">
-                        <div class="stat-item"><span class="votes text-green">12</span> votos</div>
-                        
-                        <!-- NOVO: Contador Segmentado -->
-                        <div class="stat-item answers-segmented">
-                            <div class="ans-badge human active-ans" title="Respostas da Comunidade">
-                                <i class="fas fa-user"></i> 2
-                            </div>
-                            <div class="ans-badge bot active-bot" title="Resposta da IA">
-                                <i class="fas fa-robot"></i> 1
-                            </div>
-                        </div>
-                        
-                        <div class="stat-item views">45 views</div>
-                    </div>
-                    <div class="question-content">
-                        <h3><a href="#">Como estruturar as rotas no server.js (Node+Express)?</a></h3>
-                        <p>Estou montando o backend do meu projeto e preciso saber a melhor forma de separar as rotas do chat da IA e as rotas do fórum no mesmo server.js.</p>
-                        <div class="question-footer">
-                            <div class="tags">
-                                <span class="tag">node.js</span>
-                                <span class="tag">express</span>
-                                <span class="tag">backend</span>
-                            </div>
-                            
-                            <!-- NOVO: Indicador de Qualidade / RAG -->
-                            <div class="status-indicators">
-                                <span class="best-answer-badge">
-                                    <i class="fas fa-check-circle"></i> Melhor Resposta (Humano)
-                                </span>
-                                <div class="author-info">
-                                    <i class="fas fa-user-circle"></i> Marcos_Dev há 2 horas
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PERGUNTA 2: Em aberto (Apenas a IA respondeu até agora) -->
-                <div class="question-card">
-                    <div class="stats">
-                        <div class="stat-item"><span class="votes">5</span> votos</div>
-                        
-                        <!-- NOVO: Contador Segmentado -->
-                        <div class="stat-item answers-segmented">
-                            <div class="ans-badge human zero" title="Nenhuma resposta humana">
-                                <i class="fas fa-user"></i> 0
-                            </div>
-                            <div class="ans-badge bot active-bot" title="Resposta da IA">
-                                <i class="fas fa-robot"></i> 1
-                            </div>
-                        </div>
-
-                        <div class="stat-item views">12 views</div>
-                    </div>
-                    <div class="question-content">
-                        <h3><a href="#">Erro de CORS ao tentar conectar frontend com backend Flask</a></h3>
-                        <p>Estou recebendo o erro "Access-Control-Allow-Origin" no meu console quando o React tenta puxar os dados do meu servidor Flask. Como resolvo?</p>
-                        <div class="question-footer">
-                            <div class="tags">
-                                <span class="tag">python</span>
-                                <span class="tag">flask</span>
-                                <span class="tag">cors</span>
-                            </div>
-                            <div class="status-indicators">
-                                <div class="author-info">
-                                    <i class="fas fa-user-circle"></i> Julia_Tech há 5 horas
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-</div>
+            <!-- Recebe Render Mapped Dinamico Via DOM/JS  -->
+            <div class="forum-feed" id="forum-feed-container"></div>
+            
         </main>
     </div>
-    
     <script src="forum.js"></script>
 </body>
 </html>

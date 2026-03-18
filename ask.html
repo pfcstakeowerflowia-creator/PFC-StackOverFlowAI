@@ -3,128 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fazer Pergunta - Overflowia AI</title>
+    <title>Postando Nova Regra - RAG System</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="forum.css"> <!-- Puxando nossa base visual do fórum -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="forum.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="app-layout">
         
-        <!-- SIDEBAR MANTIDA PARA NAVEGAÇÃO -->
         <aside class="side-panel">
             <div class="brand">
                 <div class="brand-icon"><i class="fas fa-brain"></i></div>
-                <h2>Overflowia.AI</h2>
+                <h2>Overflowia.AI Ask!</h2>
             </div>
             
             <div class="nav-buttons">
-                <a href="index.html" class="nav-btn secondary-btn">
-                    <i class="fas fa-robot"></i> Chat com IA
-                </a>
-                <a href="forum.html" class="nav-btn primary-btn">
-                    <i class="fas fa-users"></i> Fórum da Comunidade
-                </a>
+                <a href="index.html" class="nav-btn secondary-btn"><i class="fas fa-robot"></i> Cancelar Thread e Voltar IA chat Chat</a>
+                <a href="forum.html" class="nav-btn primary-btn"><i class="fas fa-users"></i> Descartar e Retornar Ver Postagens</a>
             </div>
 
-            <div class="history-section">
-                <h3>Avisos da Comunidade</h3>
-                <ul class="chat-list">
-                    <li><i class="fas fa-bullhorn text-green"></i> Como fazer uma boa pergunta</li>
-                    <li><i class="fas fa-shield-alt"></i> Regras e moderação</li>
-                </ul>
-            </div>
-
-            <div class="user-profile">
-                <div class="avatar"><i class="fas fa-user"></i></div>
-                <div class="user-info">
-                    <span class="user-name">Aluno PFC</span>
-                    <span class="user-role">Desenvolvedor</span>
-                </div>
-            </div>
+            <!-- Box Auth JS DOM Side Insert HTML UI Base Lateral Centralizado System  -->
+            <div id="sidebar-auth-wrapper"></div>
         </aside>
 
-        <!-- ÁREA PRINCIPAL DO FORMULÁRIO -->
         <main class="chat-container">
-            
             <header class="forum-header">
                 <div>
-                    <h1>Fazer uma Pergunta</h1>
-                    <p class="subtitle">Nossa comunidade humana e nossa Inteligência Artificial estão prontos para ajudar.</p>
+                    <h1>Forneça Dados Contexto Detalhado! Human-in-The-Loop Engine Process Database IA Model Trainning: POST- RAG Engine Add Base</h1>
+                    <p class="subtitle">Adicionado via Storage Browser Persistencia ao vivo local Banco </p>
                 </div>
             </header>
 
-            <!-- CONTAINER DO FORMULÁRIO (Rolagem) -->
             <div class="ask-container">
                 <div class="ask-guidelines">
-                    <i class="fas fa-lightbulb"></i>
+                    <i class="fas fa-server"></i>
                     <div>
-                        <strong>Boas práticas para perguntas RAG:</strong>
-                        <p>As melhores respostas poderão se tornar "Base de Conhecimento". Formule sua dúvida com clareza, insira códigos onde houver erro e explique o que você já tentou.</p>
+                        <strong>Regra Server do Projeto Web  ! Importancia Acadêmica Do Arquivo Ask (Postar Context):</strong>
+                        <p>Submeta o ID Novo Context a IA na memória Base System do Post Feed!.</p>
                     </div>
                 </div>
 
                 <form class="ask-form">
                     
-                    <!-- Campo: Título -->
                     <div class="form-card">
-                        <label>Título da Pergunta</label>
-                        <span class="field-hint">Seja direto. Imagine que está pedindo ajuda a um colega sênior de trabalho.</span>
-                        <input type="text" class="input-base" placeholder="Ex: Como estruturar minhas rotas usando Express no Node.js?">
+                        <label>Título Problem - Sintético Head Header Tittulos </label>
+                        <input type="text" id="ask-title" class="input-base" placeholder="Submissões. Title (Como fazer algo....)" required>
                     </div>
 
-                    <!-- Campo: Detalhes/Corpo da pergunta -->
                     <div class="form-card">
-                        <label>Detalhes do Problema</label>
-                        <span class="field-hint">Coloque todos os detalhes necessários para que humanos e nossa IA reproduzam seu cenário. Cole logs de erro, se houver.</span>
+                        <label>Estruturação Código  Apresentado Para Apreendizado Assistentes Model IA Dev Model ! RAG Descricoes Dores Do usuario Humano Interage</label>
                         <div class="editor-wrapper">
-                            <div class="editor-toolbar">
-                                <i class="fas fa-bold"></i>
-                                <i class="fas fa-italic"></i>
-                                <i class="fas fa-code"></i>
-                                <i class="fas fa-link"></i>
-                                <i class="fas fa-list-ol"></i>
-                                <i class="fas fa-image"></i>
-                            </div>
-                            <textarea class="editor-textarea" placeholder="Descreva o que você estava tentando fazer, e o que deu errado..."></textarea>
+                            <textarea id="ask-desc" class="editor-textarea" placeholder="Dúvidas Longas? Suba Contextos do Bug, E Detalhes!" required></textarea>
                         </div>
                     </div>
 
-                    <!-- Campo: Tags -->
-                    <div class="form-card">
-                        <label>Tags de Segmentação</label>
-                        <span class="field-hint">Adicione de 1 a 5 tags descritivas que indicam sobre o que sua pergunta é.</span>
-                        <div class="input-base tags-input-container">
-                            <div class="active-tags">
-                                <span class="input-tag">node.js <i class="fas fa-times"></i></span>
-                            </div>
-                            <input type="text" class="tag-text-input" placeholder="Digite uma tag (ex: react) e pressione Enter...">
-                        </div>
-                    </div>
-
-                    <!-- Feature PFC: IA em conjunto com Fórum -->
                     <div class="ai-feature-box">
                         <div class="ai-feature-info">
                             <i class="fas fa-robot text-bot-icon"></i>
                             <div>
-                                <strong>Geração Inicial de IA (Overflowia AI)</strong>
-                                <p>Solicitar que nosso assistente virtual forneça uma primeira resposta instantaneamente enquanto aguarda validação humana da comunidade.</p>
+                                <strong>Voz e Pre Analise Bot Trigger Hook Database Analys RAG Flow ! Process IA Rool Trigger Start WebHook Process IA (Bot Start Lógico Simul).</strong>
+                                <p>Geramos no submit A Visão Imediada Pro System Analisar.</p>
                             </div>
                         </div>
-                        <label class="switch">
-                            <input type="checkbox" checked>
-                            <span class="slider"></span>
-                        </label>
+                        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
                     </div>
 
-                    <!-- Ações Finais -->
                     <div class="form-actions">
-                        <button type="submit" class="submit-btn">Publicar Pergunta no Fórum</button>
-                        <a href="forum.html" class="cancel-link">Descartar rascunho</a>
+                        <button type="submit" class="submit-btn">Salvar No Array Data DOM JS Base Array Loc DB</button>
                     </div>
-
-</form>
+                </form>
             </div>
         </main>
     </div>

@@ -15,9 +15,75 @@
     --ai-msg-bg: #28282a;       /* Cor do balão da IA */
     
     --border-color: #333336;    /* Linhas divisórias */
+    --focus-outline: #7b61ff;   /* Cor do foco de navegação */
 }
 
-/* --- RESET BÁSICO --- */
+/* ===================================================
+   SEÇÃO DE ACESSIBILIDADE: ALTO CONTRASTE (WCAG AAA)
+   Esta seção é ativada quando o body tem a classe .high-contrast
+   =================================================== */
+body.high-contrast {
+    --bg-main: #000000 !important;
+    --bg-sidebar: #000000 !important;
+    --bg-surface: #000000 !important;
+    --bg-input: #000000 !important;
+    
+    --text-primary: #ffff00 !important; /* Texto Amarelo para máximo contraste */
+    --text-secondary: #ffffff !important;
+    
+    --accent-color: #ffff00 !important;
+    --accent-hover: #ffffff !important;
+    
+    --user-msg-bg: #ffffff !important; /* Balão do usuário branco */
+    --ai-msg-bg: #000000 !important;    /* Balão da IA preto */
+    
+    --border-color: #ffff00 !important;
+    --focus-outline: #ff0000 !important; /* Foco vermelho no alto contraste */
+}
+
+/* Ajuste de texto para mensagens do usuário no Alto Contraste */
+body.high-contrast .user-message .message-content {
+    color: #000000 !important; /* Texto preto dentro do balão branco */
+    font-weight: bold;
+}
+
+/* Ajuste de bordas para mensagens da IA no Alto Contraste */
+body.high-contrast .ai-message .message-content {
+    border: 2px solid #ffff00 !important;
+}
+
+/* ===================================================
+   LINKS DE SALTO E FOCO (USABILIDADE PARA CEGOS)
+   =================================================== */
+
+/* Foco visível para quem navega via teclado (Tab) */
+:focus {
+    outline: 3px solid var(--focus-outline) !important;
+    outline-offset: 2px;
+}
+
+/* Skip Link: Escondido, mas aparece ao ganhar foco via Tab */
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    background: var(--accent-color);
+    color: white;
+    padding: 10px 20px;
+    z-index: 9999;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 0 0 8px 0;
+    transition: top 0.3s;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* ================================
+   RESET BÁSICO 
+   ================================ */
 * {
     margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif;
 }
@@ -63,10 +129,10 @@ body { background-color: var(--bg-main); color: var(--text-primary); height: 100
 .nav-btn.primary-btn:hover { background-color: rgba(123, 97, 255, 0.2); }
 .nav-btn.secondary-btn:hover { background-color: var(--bg-surface); border-color: var(--text-secondary); }
 
-/* Container que receberá o Auth Inject (Render dinâmico do Perfil/Login) */
+/* Container que receberá o Auth Inject */
 #sidebar-auth-wrapper { margin-top: auto; }
 
-/* Render 1: Logado (Usuário e Info) */
+/* Perfil Logado */
 .user-profile {
     display: flex; align-items: center; gap: 12px; margin-top: 20px;
     padding-top: 20px; border-top: 1px solid var(--border-color);
@@ -75,19 +141,7 @@ body { background-color: var(--bg-main); color: var(--text-primary); height: 100
 .user-info { flex: 1; display: flex; flex-direction: column; }
 .user-name { font-size: 14px; font-weight: 500; }
 .user-role { font-size: 12px; color: var(--text-secondary); }
-.config-btn { cursor: pointer; color: var(--text-secondary); transition: 0.2s; }
-.config-btn:hover { color: var(--text-primary); transform: rotate(90deg); }
-.text-danger { color: #f43f5e; font-size: 18px; }
-.text-danger:hover { transform: scale(1.1); color: #e11d48; }
-
-/* Render 2: Deslogado (Apenas botão acessar) */
-.auth-section-sidebar { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: center; }
-.btn-sidebar-login {
-    width: 100%; text-align: center; background-color: transparent; border: 1px solid var(--accent-color);
-    color: var(--accent-color); padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 500;
-    text-decoration: none; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px;
-}
-.btn-sidebar-login:hover { background-color: rgba(123, 97, 255, 0.1); }
+.text-danger { color: #f43f5e; font-size: 18px; cursor: pointer; }
 
 /* ================================
    ÁREA PRINCIPAL DO CHAT
@@ -97,8 +151,6 @@ body { background-color: var(--bg-main); color: var(--text-primary); height: 100
 .top-bar { height: 60px; display: flex; justify-content: space-between; align-items: center; padding: 0 30px; border-bottom: 1px solid var(--border-color); background-color: rgba(19, 19, 20, 0.8); backdrop-filter: blur(10px); z-index: 10; }
 .current-chat-title h1 { font-size: 16px; font-weight: 600; }
 .model-badge { font-size: 11px; background-color: var(--bg-surface); padding: 2px 8px; border-radius: 10px; color: var(--accent-color); margin-top: 4px; display: inline-block; }
-.icon-btn { background: none; border: none; color: var(--text-secondary); font-size: 16px; margin-left: 15px; cursor: pointer; transition: 0.2s; }
-.icon-btn:hover { color: var(--text-primary); }
 
 .messages-area { flex: 1; overflow-y: auto; padding: 40px 15%; display: flex; flex-direction: column; gap: 30px; }
 .messages-area::-webkit-scrollbar { width: 8px; }
@@ -112,21 +164,18 @@ body { background-color: var(--bg-main); color: var(--text-primary); height: 100
 .avatar-ai { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent-color), #00d2d3); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; flex-shrink: 0; }
 .ai-message .message-content { background-color: var(--ai-msg-bg); padding: 20px; border-radius: 0 18px 18px 18px; font-size: 15px; line-height: 1.6; border: 1px solid var(--border-color); }
 
-.code-block { margin-top: 15px; background-color: #000000; border-radius: 8px; overflow: hidden; }
+/* Bloco de Código */
+.code-block { margin-top: 15px; background-color: #000000; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); }
 .code-header { background-color: #1a1a1a; padding: 8px 15px; font-size: 12px; color: var(--text-secondary); border-bottom: 1px solid #333; display: flex; justify-content: space-between; }
-.code-block code { display: block; padding: 15px; font-family: 'Courier New', Courier, monospace; font-size: 14px; color: #a8ff60; white-space: pre-wrap; }
+.code-block pre { display: block; padding: 15px; overflow-x: auto; }
+.code-block code { font-family: 'Courier New', Courier, monospace; font-size: 14px; color: #a8ff60; }
 
 /* Input Footer */
 .input-container { padding: 20px 15%; background: linear-gradient(to top, var(--bg-main) 70%, transparent); }
 .input-box { display: flex; align-items: center; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 20px; padding: 10px 15px; gap: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); transition: 0.3s; }
 .input-box:focus-within { border-color: var(--accent-color); }
 
-.attach-btn { background: none; border: none; color: var(--text-secondary); font-size: 18px; cursor: pointer; transition: 0.2s; }
-.attach-btn:hover { color: var(--text-primary); }
-
 .input-box textarea { flex: 1; background: transparent; border: none; color: var(--text-primary); font-size: 15px; resize: none; outline: none; height: 24px; line-height: 24px; }
-.input-box textarea::placeholder { color: var(--text-secondary); }
-
 .send-btn { background-color: var(--accent-color); color: white; border: none; width: 36px; height: 36px; border-radius: 10px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s; }
 .send-btn:hover { background-color: var(--accent-hover); transform: scale(1.05); }
 

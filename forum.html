@@ -3,51 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fórum Dinâmico - Overflowia</title>
+    <title>Fórum Dinâmico - Overflowia (Acessível)</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="forum.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
+    <!-- LINK DE SALTO: Essencial para cegos pularem o menu lateral e irem direto para as perguntas -->
+    <a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
+
     <div class="app-layout">
         
-        <aside class="side-panel">
+        <!-- SIDEBAR: Role navigation para acessibilidade -->
+        <aside class="side-panel" role="navigation" aria-label="Menu Lateral">
             <div class="brand">
-                <div class="brand-icon"><i class="fas fa-brain"></i></div>
+                <div class="brand-icon" aria-hidden="true"><i class="fas fa-brain"></i></div>
                 <h2>Overflowia.AI</h2>
             </div>
-            
-            <div class="nav-buttons">
-                <a href="index.html" class="nav-btn secondary-btn"><i class="fas fa-robot"></i> Chat com IA</a>
-                <button class="nav-btn primary-btn"><i class="fas fa-users"></i> Fórum de Postagem</button>
+
+            <!-- FERRAMENTAS DE ACESSIBILIDADE: BOTÃO DE CONTRASTE -->
+            <div class="accessibility-tools" style="margin-bottom: 20px; padding: 10px; border-bottom: 1px solid var(--border-color);">
+                <button id="toggle-contrast" class="nav-btn secondary-btn" style="width: 100%;" aria-label="Ativar Alto Contraste">
+                    <i class="fas fa-adjust" aria-hidden="true"></i> Alto Contraste
+                </button>
             </div>
+            
+            <nav class="nav-buttons">
+                <a href="index.html" class="nav-btn secondary-btn"><i class="fas fa-robot" aria-hidden="true"></i> Chat com IA</a>
+                <button class="nav-btn primary-btn" aria-current="page"><i class="fas fa-users" aria-hidden="true"></i> Fórum de Postagem</button>
+                <a href="sobre.html" class="nav-btn secondary-btn"><i class="fas fa-info-circle" aria-hidden="true"></i> Sobre o Projeto</a>
+            </nav>
 
             <!-- Area Injetada RAG Base Lateral -->
             <div id="sidebar-auth-wrapper"></div>
         </aside>
 
-        <main class="chat-container">
+        <main class="chat-container" id="main-content" role="main">
             
             <header class="forum-header">
                 <div>
                     <h1>Todas as Perguntas da Base Local</h1>
                     <p class="subtitle">Alimentando comunidade e Database Interno de AI</p>
                 </div>
-                <!-- Action do Novo Id Para Validar Clique -->
-                <a href="#" id="ask-button" class="ask-btn">Submeter Nova Pergunta RAG</a>
+                <!-- Botão de Ação -->
+                <a href="ask.html" id="ask-button" class="ask-btn" aria-label="Submeter nova pergunta ao fórum">Submeter Nova Pergunta RAG</a>
             </header>
 
-            <div class="forum-filters">
-                <button class="active">Mais recentes DB</button>
-                <button>Relevantes Comunidade</button>
-                <button><i class="fas fa-check-circle text-green"></i> Sucesso de IA RAG Resolvida</button>
+            <!-- Filtros com Roles de Botão para leitores de tela -->
+            <nav class="forum-filters" aria-label="Filtros do fórum">
+                <button class="active" aria-pressed="true">Mais recentes DB</button>
+                <button aria-pressed="false">Relevantes Comunidade</button>
+                <button aria-pressed="false"><i class="fas fa-check-circle text-green" aria-hidden="true"></i> Sucesso de IA RAG Resolvida</button>
+            </nav>
+
+            <!-- ARIA-LIVE: Avisa ao leitor de tela quando novas perguntas forem carregadas via JS -->
+            <div class="forum-feed" id="forum-feed-container" aria-live="polite" role="region" aria-label="Lista de perguntas">
+                <!-- Recebe Render Mapped Dinamico Via DOM/JS  -->
             </div>
 
-            <!-- Recebe Render Mapped Dinamico Via DOM/JS  -->
-            <div class="forum-feed" id="forum-feed-container"></div>
+            <!-- Rodapé de Compromisso ODS -->
+            <footer style="padding: 20px; text-align: center; font-size: 11px; color: var(--text-secondary);">
+                Overflowia.AI - Inclusão Digital e Educação de Qualidade (ODS 4 e 10).
+            </footer>
             
         </main>
     </div>
+
+    <!-- Script Original do Fórum -->
     <script src="forum.js"></script>
+
+    <!-- Script de Integração de Acessibilidade (Contraste) -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const btnContrast = document.getElementById('toggle-contrast');
+            
+            // Mantém o estado do contraste entre as páginas
+            if (localStorage.getItem('highContrast') === 'true') {
+                document.body.classList.add('high-contrast');
+            }
+
+            if (btnContrast) {
+                btnContrast.addEventListener('click', () => {
+                    const isEnabled = document.body.classList.toggle('high-contrast');
+                    localStorage.setItem('highContrast', isEnabled);
+                });
+            }
+        });
+    </script>
 </body>
 </html>

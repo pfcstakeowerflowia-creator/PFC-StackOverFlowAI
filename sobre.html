@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre o Projeto - Overflowia.AI</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="forum.css"> <!-- Reutilizando estilos de cards -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-layout">
+        
+        <!-- Sidebar Acessível -->
+        <aside class="side-panel" role="navigation" aria-label="Menu Lateral">
+            <div class="brand">
+                <div class="brand-icon" aria-hidden="true"><i class="fas fa-brain"></i></div>
+                <h2>Overflowia.AI</h2>
+            </div>
+            
+            <div class="nav-buttons">
+                <a href="index.html" class="nav-btn secondary-btn"><i class="fas fa-robot"></i> Chat com IA</a>
+                <a href="forum.html" class="nav-btn secondary-btn"><i class="fas fa-users"></i> Fórum Comunitário</a>
+                <button class="nav-btn primary-btn" aria-current="page"><i class="fas fa-info-circle"></i> Sobre o Projeto</button>
+            </div>
+
+            <div id="sidebar-auth-wrapper"></div>
+        </aside>
+
+        <main class="chat-container" id="main-content">
+            <header class="forum-header">
+                <div>
+                    <h1>Transparência e Impacto Social</h1>
+                    <p class="subtitle">Conheça os autores, nossos valores e nossa tecnologia inclusiva.</p>
+                </div>
+            </header>
+
+            <div class="ask-container">
+                <!-- SEÇÃO 1: SOBRE OS AUTORES -->
+                <article class="form-card">
+                    <header>
+                        <h2 style="color: var(--accent-color); margin-bottom: 15px;">
+                            <i class="fas fa-users"></i> Sobre os Autores e o Projeto
+                        </h2>
+                    </header>
+                    <p style="line-height: 1.6; color: var(--text-primary);">
+                        O <strong>Overflowia.AI</strong> nasceu da necessidade de democratizar o acesso à informação técnica de alta qualidade. Acreditamos que a barreira entre a Inteligência Artificial e o desenvolvedor iniciante deve ser eliminada através de uma interface intuitiva e humana.
+                    </p>
+                    <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="ai-feature-box">
+                            <p><strong>[NOME DO AUTOR 1]</strong><br><small>Função / Especialidade</small></p>
+                        </div>
+                        <div class="ai-feature-box">
+                            <p><strong>[NOME DO AUTOR 2]</strong><br><small>Função / Especialidade</small></p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- SEÇÃO 2: ODS DA ONU -->
+                <article class="form-card">
+                    <h2 style="color: #4ade80; margin-bottom: 15px;">
+                        <i class="fas fa-globe-americas"></i> Compromisso com os ODS (ONU)
+                    </h2>
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                        <section style="flex: 1; min-width: 250px; background: rgba(74, 222, 128, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(74, 222, 128, 0.2);">
+                            <h3>ODS 4 - Educação de Qualidade</h3>
+                            <p><small>Garantir a educação inclusiva e equitativa de qualidade, promovendo oportunidades de aprendizado ao longo da vida para todos através da nossa IA assistiva.</small></p>
+                        </section>
+                        <section style="flex: 1; min-width: 250px; background: rgba(0, 210, 211, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(0, 210, 211, 0.2);">
+                            <h3>ODS 10 - Redução das Desigualdades</h3>
+                            <p><small>Focamos na inclusão digital, permitindo que estudantes de diferentes níveis socioeconômicos tenham acesso gratuito à mesma base de conhecimento RAG.</small></p>
+                        </section>
+                    </div>
+                </article>
+
+                <!-- SEÇÃO 3: ACESSIBILIDADE TÉCNICA -->
+                <article class="form-card">
+                    <h2 style="color: var(--bot-color); margin-bottom: 15px;">
+                        <i class="fas fa-universal-access"></i> Acessibilidade e Engenharia de Software
+                    </h2>
+                    <p style="margin-bottom: 15px;">Este site foi construído seguindo as diretrizes do WCAG para garantir que leitores de tela como <strong>NVDA e JAWS</strong> funcionem perfeitamente.</p>
+                    
+                    <ul style="list-style: none; padding: 0; display: grid; gap: 10px;">
+                        <li><i class="fas fa-check text-green"></i> <strong>HTML Semântico:</strong> Uso de tags <code>&lt;main&gt;</code>, <code>&lt;nav&gt;</code> e <code>&lt;article&gt;</code> para navegação lógica.</li>
+                        <li><i class="fas fa-check text-green"></i> <strong>Atributos ARIA:</strong> Labels descritivos para elementos interativos.</li>
+                        <li><i class="fas fa-check text-green"></i> <strong>Alto Contraste:</strong> Paleta baseada em tons escuros (UI Dark Mode) com contraste de texto otimizado para baixa visão.</li>
+                        <li><i class="fas fa-check text-green"></i> <strong>Tags Alt:</strong> Todas as imagens e ícones possuem descrições para cegos.</li>
+                    </ul>
+
+                    <div class="code-block" style="margin-top: 20px;">
+                        <div class="code-header"><span>Exemplo de Acessibilidade no Código</span></div>
+                        <code>&lt;button aria-label="Enviar pergunta ao bot"&gt;
+  &lt;i class="fas fa-paper-plane" aria-hidden="true"&gt;&lt;/i&gt;
+&lt;/button&gt;</code>
+                    </div>
+                </article>
+            </div>
+        </main>
+    </div>
+    <script src="forum.js"></script> <!-- Reutiliza a lógica de login lateral -->
+</body>
+</html>

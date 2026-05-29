@@ -1,92 +1,100 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// Middlewares
-app.use(cors()); // Permite que seu frontend acesse o backend
+// Configurações
+app.use(cors());
 app.use(bodyParser.json());
 
-// Banco de dados em memória (Simulação)
-// Quando o servidor reiniciar, esses dados voltam ao estado inicial
-let posts = [
-    {
-        id: '1', 
-        titulo: "Erro Cors no Express Deploy Server", 
-        desc: "Estou tendo dor de cabeça enorme tentando apontar a UI React minha com minha API Express...", 
-        tags: ["express", "nodejs", "cors"], 
-        votos: 14, 
-        author: "TechStudent_", 
-        statusResolvido: true 
-    },
-    {
-        id: '2', 
-        titulo: "Centering Div usando css display table", 
-        desc: "Poderia nossa Inteligência e Alunos confirmarem isso de boas práticas?",
-        tags: ["css3", "design"], 
-        votos: 2, 
-        author: "JulianoUI_Front", 
-        statusResolvido: false 
-    }
-];
+// --- CONEXÃO MONGO DB ---
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log("✅ Conectado ao MongoDB Atlas"))
+    .catch(err => console.error("❌ Erro ao conectar ao Mongo:", err));
+
+// --- MODELO DE DADOS (SCHEMA) ---
+const PostSchema = new mongoose.Schema({
+    titulo: String,
+    desc: String,
+    tags: [String],
+    votos: { type: Number, default: 0 },
+    author: { type: String, default: "Aluno PFC" },
+    statusResolvido: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now }
+});
+
+const Post = mongoose.model('Post', PostSchema);
+
+// --- CONFIG IA ---
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // --- ENDPOINTS DO FÓRUM ---
 
-// Listar todos os posts
-app.get('/api/posts', (req, res) => {
-    res.json(posts);
-});
-
-// Criar novo post
-app.post('/api/posts', (req, res) => {
-    const { titulo, desc, tags, author } = req.body;
-    
-    const newPost = {
-        id: Date.now().toString(),
-        titulo,
-        desc,
-        tags: tags || [],
-        votos: 0,
-        author: author || "Anônimo",
-        statusResolvido: false
-    };
-
-    posts.unshift(newPost); // Adiciona no início da lista
-    res.status(201).json(newPost);
-});
-
-// Dar Upvote em um post
-app.patch('/api/posts/:id/vote', (req, res) => {
-    const { id } = req.params;
-    const post = posts.find(p => p.id === id);
-    
-    if (post) {
-        post.votos += 1;
-        return res.json({ votos: post.votos });
+// Buscar todas as perguntas do Banco
+app.get('/api/posts', async (req, res) => {
+    try {
+        const posts = await Post.find().sort({ createdAt: -1 });
+        res.json(posts);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-    res.status(404).json({ message: "Post não encontrado" });
 });
 
-// --- ENDPOINT DA IA (SIMULAÇÃO RAG) ---
-
-app.post('/api/ia/chat', (req, res) => {
-    const { prompt } = req.body;
-
-    // Aqui no futuro você conectará com a API da OpenAI ou LangChain
-    const respostaSimulada = {
-        role: "assistant",
-        content: `Recebi sua dúvida sobre: "${prompt}". Analisando nossa base de dados (RAG), recomendo verificar a documentação oficial e os posts recentes no fórum.`,
-        timestamp: new Date()
-    };
-
-    setTimeout(() => {
-        res.json(respostaSimulada);
-    }, 1500); // Simula um delay de pensamento da IA
+// Salvar nova pergunta no Banco
+app.post('/api/posts', async (req, res) => {
+    try {
+        const novoPost = new Post(req.body);
+        await novoPost.save();
+        res.status(201).json(novoPost);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
 });
 
-// Inicialização
-app.listen(PORT, () => {
-    console.log(`🚀 Servidor Overflowia.AI rodando em http://localhost:${PORT}`);
+// Votação (Update no Banco)
+app.patch('/api/posts/:id/vote', async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (post) {
+            post.votos += 1;
+            await post.save();
+            return res.json({ votos: post.votos });
+        }
+        res.status(404).json({ message: "Não encontrado" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
+
+// --- ENDPOINT CHAT IA COM RAG REAL ---
+app.post('/api/chat', async (req, res) => {
+    try {
+        const msgUsuario = req.body.mensagem;
+
+        // RAG: Busca no MongoDB posts que combinam com a pergunta
+        const palavrasChave = msgUsuario.split(" ").filter(p => p.length > 3);
+        const contextoDb = await Post.find({
+            $or: [
+                { titulo: { $regex: palavrasChave.join("|"), $options: "i" } },
+                { desc: { $regex: palavrasChave.join("|"), $options: "i" } }
+            ]
+        }).limit(3);
+
+        const textoContexto = contextoDb.map(p => `Post: ${p.titulo} - Resumo: ${p.desc}`).join("\n");
+
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const prompt = `Você é o Overflowia AI. Use o contexto do fórum abaixo se for útil.\n\nContexto:\n${textoContexto}\n\nPergunta:\n${msgUsuario}`;
+
+        const result = await model.generateContent(prompt);
+        res.json({ resposta: result.response.text() });
+    } catch (error) {
+        res.status(500).json({ resposta: "Erro ao processar IA" });
+    }
+});
+
+app.listen(PORT, () => console.log(`🚀 Server on port ${PORT}`));

@@ -42,7 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        function enviarMsgChat() {
+        
+        async function enviarMsgChat() {
             if (!isLoggedIn) {
                 window.location.href = 'login.html'; 
                 return;
@@ -51,44 +52,55 @@ document.addEventListener("DOMContentLoaded", () => {
             const msgDigitada = chatTextArea.value.trim();
             if (!msgDigitada) return;
 
-            // Sanitização básica contra XSS
             const safeMsg = msgDigitada.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-            // Insere mensagem do usuário usando semântica de 'article' para acessibilidade
             msgArea.insertAdjacentHTML('beforeend', `
             <article class="message user-message" style="margin-top:20px;">
                 <div class="message-content"> <p>${safeMsg}</p> </div>
             </article>`);
 
-            // Reseta a área e foca no scroll base inferior 
             chatTextArea.value = '';
             chatTextArea.style.height = '24px';
             msgArea.scrollTop = msgArea.scrollHeight; 
 
-            // Feedback Visual de Carregamento
             const iconeOriginalBtn = chatInputBtn.innerHTML; 
             chatInputBtn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i>'; 
             chatInputBtn.disabled = true;
-            chatInputBtn.setAttribute('aria-label', 'IA está processando...');
 
-            // Simulação de resposta da IA
-            setTimeout(() => {
-                chatInputBtn.innerHTML = iconeOriginalBtn; 
-                chatInputBtn.disabled = false; 
-                chatInputBtn.setAttribute('aria-label', 'Enviar pergunta');
+            try {
+                // MUDANÇA: Conectando na IA através do Render
+                const response = await fetch('https://pfc-stackoverflowai.onrender.com/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mensagem: msgDigitada })
+                });
 
-                // A div pai 'msgArea' tem aria-live="polite", então o leitor lerá isso automaticamente
+                if (!response.ok) throw new Error("Erro no servidor");
+
+                const data = await response.json();
+
                 msgArea.insertAdjacentHTML('beforeend', `
                 <article class="message ai-message">
                     <div class="avatar-ai" aria-hidden="true"><i class="fas fa-robot"></i></div>
                     <div class="message-content">
-                        <p><strong>Resposta do Sistema:</strong> Mensagem recebida com Segurança: "${safeMsg.substring(0,25)}..."</p><br>
-                        <p>Processamento do modelo estrutural completado! A Inteligência reconheceu sua requisição PFC e os requisitos de acessibilidade foram aplicados no retorno.</p>
+                        <p>${data.resposta}</p>
                     </div>
                 </article>`);
 
+            } catch (error) {
+                console.error(error);
+                msgArea.insertAdjacentHTML('beforeend', `
+                <article class="message ai-message">
+                    <div class="avatar-ai" aria-hidden="true"><i class="fas fa-robot" style="color:red;"></i></div>
+                    <div class="message-content" style="border-color:red;">
+                        <p style="color:red;"><strong>Erro de Conexão:</strong> O servidor da IA está offline no momento (Render dormindo). Tente novamente em 30 segundos.</p>
+                    </div>
+                </article>`);
+            } finally {
+                chatInputBtn.innerHTML = iconeOriginalBtn; 
+                chatInputBtn.disabled = false; 
                 msgArea.scrollTop = msgArea.scrollHeight;
-            }, 1500);  
+            }
         }
     }
 });

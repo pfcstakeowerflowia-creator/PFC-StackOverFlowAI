@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             try {
                 // Chamada para o backend
-                const response = await fetch('https://pfc-stackoverflowai.onrender.com', {
+                const response = await fetch('https://pfc-stackoverflowai.onrender.com/api/posts',  {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(novoPost)

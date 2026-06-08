@@ -87,7 +87,7 @@ app.post('/api/chat', async (req, res) => {
 
         const textoContexto = contextoDb.map(p => `Post: ${p.titulo} - Resumo: ${p.desc}`).join("\n");
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
         const prompt = `Você é o Overflowia AI. Use o contexto do fórum abaixo se for útil.\n\nContexto:\n${textoContexto}\n\nPergunta:\n${msgUsuario}`;
 
         const result = await model.generateContent(prompt);

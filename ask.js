@@ -1,6 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    if (!isLoggedIn) { window.location.href = 'login.html'; return; }
+    if (!isLoggedIn) {
+        window.location.href = 'login.html'; 
+        return; 
+    }
+    renderizarPerfilLateral(isLoggedIn);
 
     const askForm = document.querySelector('.ask-form');
     if (askForm) {
@@ -10,25 +14,46 @@ document.addEventListener("DOMContentLoaded", () => {
             const novoPost = {
                 titulo: document.getElementById('ask-title').value,
                 desc: document.getElementById('ask-desc').value,
-                tags: ["RAG-Database", "MongoDB"],
-                author: "Admin Root (Local Master DB)"
+                tags: ["RAG", "Base de Dados"], 
+                author: "Aluno PFC"
             };
 
             try {
-                // Chamada para o backend
-                const response = await fetch('https://pfc-stackoverflowai.onrender.com/api/posts',  {
+                // ENVIA PARA O MONGODB VIA RENDER
+                const response = await fetch('https://pfc-stackoverflowai.onrender.com/api/posts', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(novoPost)
                 });
 
                 if (response.ok) {
-                    alert("✅ Salvo com sucesso no MongoDB!");
+                    alert("✅ Pergunta salva com sucesso no Banco de Dados!");
                     window.location.href = 'forum.html';
+                } else {
+                    alert("❌ Falha ao salvar no servidor.");
                 }
             } catch (error) {
-                alert("❌ Erro ao conectar com o servidor.");
+                console.error(error);
+                alert("❌ Erro de conexão com o banco.");
             }
         });
     }
 });
+
+function renderizarPerfilLateral(isLoggedIn) {
+    const wrapper = document.getElementById('sidebar-auth-wrapper');
+    if(wrapper && isLoggedIn) {
+         wrapper.innerHTML = `
+        <div class="user-profile">
+            <div class="avatar"><i class="fas fa-user"></i></div>
+            <div class="user-info">
+                <span class="user-name">Aluno PFC Logado</span>
+            </div>
+            <i class="fas fa-sign-out-alt config-btn text-danger" style="cursor:pointer;" onclick="window.logout()"></i>
+        </div>`;
+    }
+}
+window.logout = function() {
+    localStorage.removeItem('isLoggedIn');
+    window.location.href = 'login.html'; 
+}

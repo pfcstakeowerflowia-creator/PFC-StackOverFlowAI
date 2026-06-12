@@ -1,13 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
     
-    // 1. GERENCIAMENTO DE ESTADO DE LOGIN
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     renderizarPerfilLateral(isLoggedIn);
 
-    // 2. LÓGICA DE ALTO CONTRASTE (Acessibilidade Visual)
     const btnContrast = document.getElementById('toggle-contrast');
-    
-    // Verifica se a preferência de contraste já está salva no navegador
     if (localStorage.getItem('highContrast') === 'true') {
         document.body.classList.add('high-contrast');
     }
@@ -16,14 +12,9 @@ document.addEventListener("DOMContentLoaded", () => {
         btnContrast.addEventListener('click', () => {
             const isEnabled = document.body.classList.toggle('high-contrast');
             localStorage.setItem('highContrast', isEnabled);
-            
-            // Feedback sonoro para leitores de tela sobre a mudança de estado
-            const statusMsg = isEnabled ? "Modo de alto contraste ativado" : "Modo de alto contraste desativado";
-            console.log(statusMsg); // Opcional: pode-se usar um elemento com aria-live para anunciar isso.
         });
     }
 
-    // 3. GERENCIAMENTO DO CHAT (Acessibilidade de Conteúdo)
     const chatInputBtn = document.getElementById('btn-send');
     const chatTextArea = document.getElementById('user-input');
     const msgArea = document.getElementById('chat-messages');
@@ -42,7 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        
         async function enviarMsgChat() {
             if (!isLoggedIn) {
                 window.location.href = 'login.html'; 
@@ -64,11 +54,11 @@ document.addEventListener("DOMContentLoaded", () => {
             msgArea.scrollTop = msgArea.scrollHeight; 
 
             const iconeOriginalBtn = chatInputBtn.innerHTML; 
-            chatInputBtn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i>'; 
+            chatInputBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; 
             chatInputBtn.disabled = true;
 
             try {
-                // MUDANÇA: Conectando na IA através do Render
+                // CHAMA O BACKEND NO RENDER
                 const response = await fetch('https://pfc-stackoverflowai.onrender.com/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -81,9 +71,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 msgArea.insertAdjacentHTML('beforeend', `
                 <article class="message ai-message">
-                    <div class="avatar-ai" aria-hidden="true"><i class="fas fa-robot"></i></div>
+                    <div class="avatar-ai"><i class="fas fa-robot"></i></div>
                     <div class="message-content">
-                        <p>${data.resposta}</p>
+                        ${data.resposta}
                     </div>
                 </article>`);
 
@@ -91,9 +81,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.error(error);
                 msgArea.insertAdjacentHTML('beforeend', `
                 <article class="message ai-message">
-                    <div class="avatar-ai" aria-hidden="true"><i class="fas fa-robot" style="color:red;"></i></div>
-                    <div class="message-content" style="border-color:red;">
-                        <p style="color:red;"><strong>Erro de Conexão:</strong> O servidor da IA está offline no momento (Render dormindo). Tente novamente em 30 segundos.</p>
+                    <div class="avatar-ai"><i class="fas fa-robot" style="color:red;"></i></div>
+                    <div class="message-content" style="border-color:red; color:red;">
+                        <strong>Erro de Conexão:</strong> O servidor demorou a responder (Render dormindo) ou a API Key está errada.
                     </div>
                 </article>`);
             } finally {
@@ -105,37 +95,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-/**
- * Renderiza o perfil na barra lateral dependendo do estado de login.
- * Mantém a estrutura visual compatível com o style.css original.
- */
 function renderizarPerfilLateral(isLoggedIn) {
     const wrapper = document.getElementById('sidebar-auth-wrapper');
     if (!wrapper) return;
-
     if (isLoggedIn) {
         wrapper.innerHTML = `
         <div class="user-profile">
-            <div class="avatar" aria-hidden="true"><i class="fas fa-user"></i></div>
+            <div class="avatar"><i class="fas fa-user"></i></div>
             <div class="user-info">
                 <span class="user-name">Aluno PFC Logado</span>
                 <span class="user-role">Autenticado AI Chat</span>
             </div>
-            <button class="icon-btn text-danger" onclick="window.logout()" title="Encerrar Sessão" aria-label="Sair da conta" style="background:none; border:none;">
-                <i class="fas fa-sign-out-alt"></i>
-            </button>
+            <button class="icon-btn text-danger" onclick="window.logout()" style="background:none; border:none; cursor:pointer;"><i class="fas fa-sign-out-alt"></i></button>
         </div>`;
     } else {
         wrapper.innerHTML = `
         <div class="auth-section-sidebar">
-            <a href="login.html" class="btn-sidebar-login">
-                <i class="fas fa-sign-in-alt" aria-hidden="true"></i> Fazer Login Seguro
-            </a>
+            <a href="login.html" class="btn-sidebar-login"><i class="fas fa-sign-in-alt"></i> Fazer Login Seguro</a>
         </div>`;
     }
 }
 
-// Expõe a função logout globalmente para o clique no ícone
 window.logout = function() {
     localStorage.removeItem('isLoggedIn'); 
     window.location.reload(); 

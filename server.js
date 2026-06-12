@@ -14,7 +14,6 @@ mongoose.connect(process.env.MONGODB_URI)
     .catch(err => console.error("❌ Erro no Mongo:", err));
 
 // Rotas
-app.use('/api', apiRoutes);
-
+const apiRoutes = require('./routes/chatRoutes');
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Servidor Overflowia na porta ${PORT}`));

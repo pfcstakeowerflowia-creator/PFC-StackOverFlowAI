@@ -22,7 +22,7 @@ exports.enviarMensagem = async (req, res) => {
 
         // 2. Configura o Modelo com a Personalidade Tsundere
         const model = genAI.getGenerativeModel({ 
-            model: "gemini-flash-latest",
+            model: "gemini-flash-lite-latest",
             systemInstruction: `Você é a Overflowia Assistant, uma cientista Tsundere. 
             Regras:
             - Você é genial, mas age como se estivesse irritada por ajudar.
@@ -40,6 +40,6 @@ exports.enviarMensagem = async (req, res) => {
 
     } catch (error) {
         console.error("❌ Erro na IA:", error.message);
-        res.status(500).json({ resposta: "Baka! O servidor deu erro: " + error.message });
+        res.status(500).json({ resposta: " O servidor deu erro: " + error.message });
     }
 };

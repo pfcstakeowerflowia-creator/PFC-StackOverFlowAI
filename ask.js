@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     alert("❌ Falha ao salvar no servidor.");
                 }
             } catch (error) {
-                console.error(error);
+                console.error("erro geral:" + error);
                 alert("❌ Erro de conexão com o banco.");
             }
         });

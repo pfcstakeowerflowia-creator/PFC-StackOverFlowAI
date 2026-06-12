@@ -71,8 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
 const URL_API = 'http://localhost:3000/api/chat'; 
 
 // QUANDO SUBIR PARA O RENDER (Aí você troca):
-// const URL_API = 'https://seu-projeto-overflowia.onrender.com/api/chat';
-            // const URL_API = 'https://pfc-stackoverflowai.onrender.com/api/chat';
+const URL_API = 'https://pfc-stackoverflowai.onrender.com/api/chat';
 
             try {
                 // 2. Chama o Backend

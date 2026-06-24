@@ -50,7 +50,7 @@ exports.enviarMensagem = async (req, res) => {
 
         // 2. Configura o Modelo com a Nova Personalidade
         const model = genAI.getGenerativeModel({ 
-            model: "gemini-3.0-flash",
+            model: "gemini-3-pro-preview",
             systemInstruction: `Você é um assistente de inteligência artificial direto, prestativo e profissional para um fórum de programação.
             Regras:
             - Seja direto, claro e forneça respostas úteis e corretas.

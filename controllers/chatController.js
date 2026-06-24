@@ -47,17 +47,19 @@ exports.enviarMensagem = async (req, res) => {
                 }
             });
         }
-
-        // 2. Configura o Modelo com a Nova Personalidade
+        
+        // 2. Configura o Modelo com a Personalidade e o modelo atualizado (gemini-2.5-flash)
         const model = genAI.getGenerativeModel({ 
-            model: "gemini-3-pro-preview",
-            systemInstruction: `Você é um assistente de inteligência artificial direto, prestativo e profissional para um fórum de programação.
+            model: "gemini-2.5-flash", // Modelo atualizado e ativo em produção
+             systemInstruction: `Você é um assistente de inteligência artificial direto, prestativo e profissional para um fórum de programação.
             Regras:
             - Seja direto, claro e forneça respostas úteis e corretas.
             - Sempre que houver código na resposta, use formatação Markdown padrão (como blocos de código com a respectiva linguagem).
             - Utilize as informações do [CONTEXTO DO FÓRUM LOCAL] se elas forem úteis para resolver a questão do usuário.
             - Caso o usuário forneça imagens ou arquivos, analise-los com precisão e relate diretamente suas conclusões.`
         });
+
+
 
         // 3. Executa a chamada à API do Gemini
         const result = await model.generateContent(parts);

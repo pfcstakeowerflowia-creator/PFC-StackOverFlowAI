@@ -1,8 +1,8 @@
-const { GoogleGenAI } = require("@google/genai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const Post = require("../models/Post");
 
-// Inicializa a nova biblioteca com a sua chave
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// Inicializa a biblioteca clássica com a sua chave
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 exports.enviarMensagem = async (req, res) => {
     try {
@@ -40,30 +40,25 @@ exports.enviarMensagem = async (req, res) => {
             });
         }
 
-        // 2. Chama a IA usando o novo formato @google/genai
-        const response = await ai.models.generateContent({
-            model: 'gemini-3.5-flash', 
-            contents: parts,
-            config: {
-                systemInstruction: `Você é o Overflowia Assistant, um assistente de Inteligência Artificial educado, profissional e prestativo, criado para ajudar estudantes e desenvolvedores.
-                
-                Regras:
-                - Responda de forma clara, direta e amigável.
-                - Se encontrar algo no [CONTEXTO LOCAL], use essa informação para responder e cite que você encontrou a resposta no banco de dados da comunidade.
-                - Se o usuário anexar um arquivo, utilize-o para fundamentar sua análise.
-                
-                🔥 REGRAS RÍGIDAS SOBRE CÓDIGO 🔥
-                - NUNCA envie blocos de código, exemplos de código ou scripts, a menos que o usuário PEÇA EXPLICITAMENTE (ex: "me dê o código", "como programo isso", "faça um exemplo em HTML").
-                - Se o usuário fizer uma pergunta teórica (ex: "o que é flexbox?"), responda APENAS com texto, explicações e analogias, sem escrever linhas de código.
-                - SE, e SOMENTE SE, o usuário pedir código, você DEVE envolver o código nesta estrutura exata de HTML para renderizar bonito no site:
-                <div class="code-block"><div class="code-header"><span>Código</span></div><pre><code>...seu código aqui...</code></pre></div>`
-            }
+        // 2. Configura o Modelo com a Nova Personalidade
+        const model = genAI.getGenerativeModel({ 
+            model: "gemini-1.5-flash",
+            systemInstruction: `Você é um assistente de inteligência artificial direto, prestativo e profissional para um fórum de programação.
+            Regras:
+            - Seja direto, claro e forneça respostas úteis e corretas.
+            - Sempre que houver código na resposta, use formatação Markdown padrão (como blocos de código com a respectiva linguagem).
+            - Utilize as informações do [CONTEXTO DO FÓRUM LOCAL] se elas forem úteis para resolver a questão do usuário.
+            - Caso o usuário forneça imagens ou arquivos, analise-los com precisão e relate diretamente suas conclusões.`
         });
 
-        res.json({ resposta: response.text });
+        // 3. Executa a chamada à API do Gemini
+        const result = await model.generateContent(parts);
+        const response = await result.response;
+        
+        res.json({ resposta: response.text() });
 
     } catch (error) {
         console.error("❌ Erro na IA:", error.message);
-        res.status(500).json({ resposta: " O servidor deu erro: " + error.message });
+        res.status(500).json({ resposta: "O servidor deu erro: " + error.message });
     }
 };

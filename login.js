@@ -1,4 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
+    // Mantém o estado do contraste
+    if (localStorage.getItem('highContrast') === 'true') {
+        document.body.classList.add('high-contrast');
+    }
+
     const loginForm = document.querySelector('.login-form');
     
     if (loginForm) {

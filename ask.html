@@ -17,6 +17,13 @@
                 <h2>Overflowia.AI Ask!</h2>
             </div>
             
+            <!-- FERRAMENTAS DE ACESSIBILIDADE: BOTÃO DE CONTRASTE -->
+            <div class="accessibility-tools" style="margin-bottom: 20px; padding: 10px; border-bottom: 1px solid var(--border-color);">
+                <button id="toggle-contrast" class="nav-btn secondary-btn" style="width: 100%;" aria-label="Ativar Alto Contraste">
+                    <i class="fas fa-adjust" aria-hidden="true"></i> Alto Contraste
+                </button>
+            </div>
+            
             <div class="nav-buttons">
                 <a href="index.html" class="nav-btn secondary-btn"><i class="fas fa-robot"></i> Cancelar Thread e Voltar IA chat Chat</a>
                 <a href="forum.html" class="nav-btn primary-btn"><i class="fas fa-users"></i> Descartar e Retornar Ver Postagens</a>
@@ -77,5 +84,24 @@
     </div>
     
     <script src="ask.js"></script>
+
+    <!-- Script de Integração de Acessibilidade (Contraste) -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const btnContrast = document.getElementById('toggle-contrast');
+            
+            // Mantém o estado do contraste entre as páginas
+            if (localStorage.getItem('highContrast') === 'true') {
+                document.body.classList.add('high-contrast');
+            }
+
+            if (btnContrast) {
+                btnContrast.addEventListener('click', () => {
+                    const isEnabled = document.body.classList.toggle('high-contrast');
+                    localStorage.setItem('highContrast', isEnabled);
+                });
+            }
+        });
+    </script>
 </body>
 </html>

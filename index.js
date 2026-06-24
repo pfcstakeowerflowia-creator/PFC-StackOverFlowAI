@@ -174,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
             chatInputBtn.disabled = true;
 
             // --- CONFIGURAÇÃO AUTOMÁTICA DA URL DA API ---
-            const URL_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            const URL_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
                 ? 'http://localhost:3000/api/chat'
                 : 'https://pfc-stackoverflowai.onrender.com/api/chat';
 

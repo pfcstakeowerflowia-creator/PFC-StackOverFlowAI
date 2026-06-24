@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             try {
                 // ENVIA PARA O MONGODB VIA RENDER OU LOCAL
-                const URL_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                const URL_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
                     ? 'http://localhost:3000/api/posts'
                     : 'https://pfc-stackoverflowai.onrender.com/api/posts';
                 const response = await fetch(URL_API, {

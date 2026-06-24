@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
         // BUSCA DO MONGODB VIA RENDER OU LOCAL
-        const URL_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        const URL_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
             ? 'http://localhost:3000/api/posts'
             : 'https://pfc-stackoverflowai.onrender.com/api/posts';
         const response = await fetch(URL_API);
@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 // FUNÇÃO PARA SALVAR O VOTO NO BANCO
 window.votar = async function(id) {
     try {
-        const URL_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        const URL_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
             ? `http://localhost:3000/api/posts/${id}/vote`
             : `https://pfc-stackoverflowai.onrender.com/api/posts/${id}/vote`;
         const res = await fetch(URL_API, { method: 'PATCH' });

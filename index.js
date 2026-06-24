@@ -189,7 +189,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     })
                 });
 
-                if (!response.ok) throw new Error("Erro no servidor");
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.resposta || "Erro interno no servidor.");
+                }
 
                 const data = await response.json();
 
@@ -212,7 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <article class="message ai-message">
                     <div class="avatar-ai"><i class="fas fa-robot" style="color:red;"></i></div>
                     <div class="message-content" style="border-color:red; color:red;">
-                        <strong>[SISTEMA]:</strong> Erro Crítico! Verifique se o seu servidor Node.js está rodando ou se a API Key é válida.
+                        <strong>[SISTEMA]:</strong> ${error.message}
                     </div>
                 </article>`);
             } finally {

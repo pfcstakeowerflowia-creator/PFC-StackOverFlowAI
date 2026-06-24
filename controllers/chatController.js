@@ -1,13 +1,21 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const Post = require("../models/Post");
 
-// Inicializa a biblioteca clássica com a sua chave
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
 exports.enviarMensagem = async (req, res) => {
     try {
         const msgUsuario = req.body.mensagem;
         const arquivoUsuario = req.body.arquivo; 
+
+        // Verifica se a API Key está configurada no servidor
+        if (!process.env.GEMINI_API_KEY) {
+            console.error("❌ Erro: A variável de ambiente GEMINI_API_KEY não foi configurada.");
+            return res.status(500).json({ 
+                resposta: "Erro de Configuração: A variável de ambiente GEMINI_API_KEY não está configurada no servidor de hospedagem (Render). Configure-a nas configurações de ambiente do painel." 
+            });
+        }
+
+        // Inicializa a biblioteca clássica com a sua chave dentro do handler para evitar crashes na inicialização
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
         // 1. RAG: Busca no MongoDB posts relacionados
         const palavrasChave = msgUsuario ? msgUsuario.split(" ").filter(p => p.length > 3) : [];

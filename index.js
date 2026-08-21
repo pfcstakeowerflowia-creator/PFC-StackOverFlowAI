@@ -1,10 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
-    
-    // Verifica se o usuário está logado
+    // 1. Verificação de Autenticação
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     renderizarPerfilLateral(isLoggedIn);
 
-    // Controle de Alto Contraste (Acessibilidade)
+    // 2. Controle de Acessibilidade (Alto Contraste)
     const btnContrast = document.getElementById('toggle-contrast');
     if (localStorage.getItem('highContrast') === 'true') {
         document.body.classList.add('high-contrast');
@@ -17,12 +16,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Elementos do Chat
+    // 3. Mapeamento de Elementos do Chat
     const chatInputBtn = document.getElementById('btn-send');
     const chatTextArea = document.getElementById('user-input');
     const msgArea = document.getElementById('chat-messages');
 
-    // Elementos do Sistema de Anexo (Adicionados para upload de arquivos)
+    // 4. Mapeamento de Elementos de Anexo
     const fileInput = document.getElementById('file-input');
     const attachBtn = document.querySelector('.attach-btn');
     const previewBar = document.getElementById('attachment-preview-bar');
@@ -30,56 +29,50 @@ document.addEventListener("DOMContentLoaded", () => {
     const previewIcon = document.getElementById('preview-icon');
     const removeAttachmentBtn = document.getElementById('btn-remove-attachment');
 
-    let selectedFile = null; // Armazena os dados estruturados do anexo selecionado
+    let selectedFile = null;
 
-    // Lógica para capturar e ler o arquivo ao clicar no botão de clipe de papel
+    // Gerenciador de Seleção de Arquivo / Print
     if (attachBtn && fileInput) {
         attachBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            fileInput.click(); // Abre a janela de seleção de arquivos do sistema
+            fileInput.click();
         });
 
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
 
-            // Limite de segurança de até 4MB por anexo
-            if (file.size > 4 * 1024 * 1024) {
-                alert("O arquivo é muito grande! Escolha um arquivo de até 4MB.");
+            // Limite de segurança de até 15MB
+            if (file.size > 15 * 1024 * 1024) {
+                alert("O arquivo excede o limite permitido de 15MB!");
                 fileInput.value = '';
                 return;
             }
 
             const reader = new FileReader();
             reader.onload = function(evt) {
-                // Extrai apenas os dados base64 brutos
                 const rawBase64 = evt.target.result.split(',')[1];
-
                 selectedFile = {
                     base64: rawBase64,
-                    mimeType: file.type,
+                    mimeType: file.type || 'application/octet-stream',
                     name: file.name
                 };
 
-                // Define o ícone de exibição no preview de acordo com o tipo do arquivo
                 if (file.type.startsWith('image/')) {
                     previewIcon.className = 'fas fa-file-image';
                 } else if (file.type === 'application/pdf') {
                     previewIcon.className = 'fas fa-file-pdf';
                 } else {
-                    previewIcon.className = 'fas fa-file-alt';
+                    previewIcon.className = 'fas fa-file-code';
                 }
 
-                // Renderiza a barra de preview
                 previewFilename.textContent = file.name;
                 previewBar.style.display = 'flex';
             };
-
             reader.readAsDataURL(file);
         });
     }
 
-    // Botão de remoção do anexo na barra de preview
     if (removeAttachmentBtn) {
         removeAttachmentBtn.addEventListener('click', () => {
             selectedFile = null;
@@ -88,15 +81,23 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Função Global para preencher o chat com sugestões rápidas
+    window.inserirExemplo = function(texto) {
+        if (chatTextArea) {
+            chatTextArea.value = texto;
+            chatTextArea.focus();
+            chatTextArea.dispatchEvent(new Event('input'));
+        }
+    };
+
+    // 5. Configuração de Envio e Redimensionamento Automático
     if (chatInputBtn && chatTextArea && msgArea) {
         
-        // Clique no botão de enviar
         chatInputBtn.addEventListener('click', (e) => {
             e.preventDefault();
             enviarMsgChat();
         });
 
-        // Enviar com a tecla "Enter"
         chatTextArea.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) { 
                 e.preventDefault(); 
@@ -104,24 +105,17 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // Ajuste automático de altura do campo de texto conforme o usuário digita
         chatTextArea.addEventListener('input', function() {
-            this.style.height = '24px'; // Reseta a altura para recalcular
-            const novaAltura = Math.min(this.scrollHeight, 150); // Limita o crescimento máximo a 150px
+            this.style.height = '24px';
+            const novaAltura = Math.min(this.scrollHeight, 200);
             this.style.height = novaAltura + 'px';
-            
-            // Exibe a barra de rolagem se o texto passar de 150px
-            if (this.scrollHeight > 150) {
-                this.style.overflowY = 'auto';
-            } else {
-                this.style.overflowY = 'hidden';
-            }
+            this.style.overflowY = this.scrollHeight > 200 ? 'auto' : 'hidden';
         });
 
+        // Função Principal de Envio
         async function enviarMsgChat() {
-            // Se não estiver logado, manda para o login
             if (!isLoggedIn) {
-                alert("Baka! Você precisa fazer login para falar comigo!");
+                alert("Você precisa estar logado para interagir com o assistente!");
                 window.location.href = 'login.html'; 
                 return;
             }
@@ -129,57 +123,62 @@ document.addEventListener("DOMContentLoaded", () => {
             const msgDigitada = chatTextArea.value.trim();
             if (!msgDigitada && !selectedFile) return;
 
-            // Limpa caracteres especiais para evitar erros
-            const safeMsg = msgDigitada.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-            // Configura a visualização do anexo na bolha do chat do usuário
+            // Renderiza o anexo no balão do usuário se houver
             let attachmentHTML = '';
             if (selectedFile) {
                 if (selectedFile.mimeType.startsWith('image/')) {
-                    // Renderiza a imagem diretamente
-                    attachmentHTML = `<div style="margin-top: 8px;"><img src="data:${selectedFile.mimeType};base64,${selectedFile.base64}" style="max-width: 200px; max-height: 200px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);" alt="Imagem Anexada"></div>`;
+                    attachmentHTML = `<div style="margin-top: 10px;"><img src="data:${selectedFile.mimeType};base64,${selectedFile.base64}" style="max-width: 280px; max-height: 200px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);" alt="Anexo enviado"></div>`;
                 } else {
-                    // Renderiza uma tag com o nome do arquivo
                     attachmentHTML = `<div style="margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 8px; font-size: 13px;">
                         <i class="fas fa-paperclip"></i> <span>${selectedFile.name}</span>
                     </div>`;
                 }
             }
 
-            // 1. Mostrar a mensagem do usuário na tela (incluindo o anexo se houver)
+            const safeMsg = msgDigitada.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+            // Exibe mensagem do usuário
             msgArea.insertAdjacentHTML('beforeend', `
-            <article class="message user-message" style="margin-top:20px;">
+            <article class="message user-message" style="margin-top: 20px;">
                 <div class="message-content"> 
-                    <p>${safeMsg}</p> 
+                    <p style="white-space: pre-wrap;">${safeMsg}</p> 
                     ${attachmentHTML}
                 </div>
             </article>`);
 
-            // Backup temporário dos dados do arquivo para o envio
             const backupFileToSend = selectedFile;
 
-            // Limpa o campo de texto e reseta os estados do anexo imediatamente
+            // Limpa o formulário
             chatTextArea.value = ''; 
             chatTextArea.style.height = '24px'; 
-            chatTextArea.style.overflowY = 'hidden';
             selectedFile = null;
             if (fileInput) fileInput.value = '';
             if (previewBar) previewBar.style.display = 'none';
+            msgArea.scrollTop = msgArea.scrollHeight;
 
-            msgArea.scrollTop = msgArea.scrollHeight; // Rola para baixo
-
-            // Estado de carregamento no botão
+            // Exibe indicador de carregamento
             const iconeOriginalBtn = chatInputBtn.innerHTML; 
             chatInputBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; 
             chatInputBtn.disabled = true;
 
-            // --- CONFIGURAÇÃO AUTOMÁTICA DA URL DA API ---
+            const loadingId = 'loading-' + Date.now();
+            msgArea.insertAdjacentHTML('beforeend', `
+            <article class="message ai-message" id="${loadingId}">
+                <div class="avatar-ai" aria-hidden="true"><i class="fas fa-robot"></i></div>
+                <div class="message-content">
+                    <p style="color: var(--text-secondary);">
+                        <i class="fas fa-circle-notch fa-spin"></i> Consultando base do Fórum (RAG) e formulando resposta técnica...
+                    </p>
+                </div>
+            </article>`);
+            msgArea.scrollTop = msgArea.scrollHeight;
+
+            // URL da API dinâmica (Local vs Produção Render)
             const URL_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
                 ? 'http://localhost:3000/api/chat'
                 : 'https://pfc-stackoverflowai.onrender.com/api/chat';
 
             try {
-                // 2. Chama o Backend enviando a mensagem e o arquivo associado
                 const response = await fetch(URL_API, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -189,33 +188,41 @@ document.addEventListener("DOMContentLoaded", () => {
                     })
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.resposta || "Erro interno no servidor.");
-                }
-
                 const data = await response.json();
+                
+                const loadingElement = document.getElementById(loadingId);
+                if (loadingElement) loadingElement.remove();
 
-                // --- UPGRADE VISUAL (Sprint 0): MARKDOWN PARA HTML ---
-                // O marked.parse transforma a resposta da IA em HTML formatado
-                const respostaFormatada = marked.parse(data.resposta);
+                // Converte Markdown e sanitiza com DOMPurify
+                const rawHTML = marked.parse(data.resposta || "Nenhuma resposta retornada.");
+                const cleanHTML = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(rawHTML) : rawHTML;
 
-                // 3. Mostra a resposta da IA na tela
                 msgArea.insertAdjacentHTML('beforeend', `
                 <article class="message ai-message">
                     <div class="avatar-ai"><i class="fas fa-robot"></i></div>
                     <div class="message-content">
-                        ${respostaFormatada}
+                        ${cleanHTML}
                     </div>
                 </article>`);
 
+                // Aplica realce de sintaxe com Highlight.js em blocos de código
+                if (typeof hljs !== 'undefined') {
+                    document.querySelectorAll('pre code').forEach((block) => {
+                        hljs.highlightElement(block);
+                        adicionarBotaoCopiar(block);
+                    });
+                }
+
             } catch (error) {
-                console.error(error);
+                console.error("Erro na requisição:", error);
+                const loadingElement = document.getElementById(loadingId);
+                if (loadingElement) loadingElement.remove();
+
                 msgArea.insertAdjacentHTML('beforeend', `
                 <article class="message ai-message">
-                    <div class="avatar-ai"><i class="fas fa-robot" style="color:red;"></i></div>
-                    <div class="message-content" style="border-color:red; color:red;">
-                        <strong>[SISTEMA]:</strong> ${error.message}
+                    <div class="avatar-ai"><i class="fas fa-exclamation-triangle" style="color:#f43f5e;"></i></div>
+                    <div class="message-content" style="border-color:#f43f5e; color:#f43f5e;">
+                        <strong>[Erro de Comunicação]:</strong> ${error.message}
                     </div>
                 </article>`);
             } finally {
@@ -227,9 +234,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-/**
- * Função para renderizar o perfil na barra lateral
- */
+// Adiciona botão "Copiar" no cabeçalho de cada bloco de código
+function adicionarBotaoCopiar(codeBlock) {
+    const pre = codeBlock.parentElement;
+    if (pre && !pre.querySelector('.copy-code-btn')) {
+        pre.style.position = 'relative';
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-code-btn';
+        copyBtn.innerHTML = '<i class="far fa-copy"></i> Copiar';
+        copyBtn.style.cssText = 'position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: var(--text-primary); padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; transition: 0.2s;';
+        
+        copyBtn.addEventListener('click', async () => {
+            await navigator.clipboard.writeText(codeBlock.innerText);
+            copyBtn.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+            copyBtn.style.background = 'rgba(74, 222, 128, 0.2)';
+            setTimeout(() => {
+                copyBtn.innerHTML = '<i class="far fa-copy"></i> Copiar';
+                copyBtn.style.background = 'rgba(255,255,255,0.1)';
+            }, 2000);
+        });
+
+        pre.appendChild(copyBtn);
+    }
+}
+
+// Renderização do Perfil na Sidebar
 function renderizarPerfilLateral(isLoggedIn) {
     const wrapper = document.getElementById('sidebar-auth-wrapper');
     if (!wrapper) return;
@@ -238,10 +267,10 @@ function renderizarPerfilLateral(isLoggedIn) {
         <div class="user-profile">
             <div class="avatar"><i class="fas fa-user"></i></div>
             <div class="user-info">
-                <span class="user-name">Usuário Tsundere</span>
-                <span class="user-role">Autenticado</span>
+                <span class="user-name">Aluno PFC Logado</span>
+                <span class="user-role">Autenticado Local DB</span>
             </div>
-            <button class="icon-btn text-danger" onclick="window.logout()" style="background:none; border:none; cursor:pointer;"><i class="fas fa-sign-out-alt"></i></button>
+            <button class="icon-btn text-danger" onclick="window.logout()" style="background:none; border:none; cursor:pointer;" title="Desconectar"><i class="fas fa-sign-out-alt"></i></button>
         </div>`;
     } else {
         wrapper.innerHTML = `
@@ -251,8 +280,8 @@ function renderizarPerfilLateral(isLoggedIn) {
     }
 }
 
-// Função de Logout
+// Logout de Sessão
 window.logout = function() {
     localStorage.removeItem('isLoggedIn'); 
     window.location.reload(); 
-}
+};

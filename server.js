@@ -3,20 +3,24 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const apiRoutes = require('./routes/chatRoutes'); // Importando o arquivo de rotas
+const apiRoutes = require('./routes/chatRoutes');
 
 const app = express();
+
+// Habilita CORS para requisições do frontend
 app.use(cors());
-app.use(express.json());
 
-// Conexão MongoDB
+// Aumenta o limite de payload para 50MB (permite mensagens longas e envio de imagens em Base64)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Conexão com o MongoDB Atlas
 mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log("✅ Conectado ao MongoDB Atlas"))
-    .catch(err => console.error("❌ Erro no Mongo:", err));
+    .then(() => console.log("✅ Conectado ao MongoDB Atlas com sucesso!"))
+    .catch(err => console.error("❌ Erro no MongoDB:", err.message));
 
-// --- REGISTRO DAS ROTAS (ESTAVA FALTANDO) ---
-// Mapeia todas as rotas de apiRoutes para começarem com o prefixo "/api"
+// Registra todas as rotas com o prefixo /api
 app.use('/api', apiRoutes);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Servidor Overflowia na porta ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Servidor Overflowia rodando na porta ${PORT}`));

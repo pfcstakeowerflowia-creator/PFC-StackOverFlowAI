@@ -3,29 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overflowia AI - IA e Comunidade (Acessível)</title>
+    <title>Overflowia AI - Assistente Técnico e Comunidade</title>
     <link rel="stylesheet" href="style.css">
     
-    <!-- BIBLIOTECA DE TRADUÇÃO DE MARKDOWN (Sprint 0 - Essencial para a IA) -->
+    <!-- Bibliotecas de Renderização Markdown, Segurança e Destaque de Código -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <!-- LINK DE SALTO: Permite que usuários de leitores de tela pulem o menu e iniciem o chat diretamente -->
+    <!-- LINK DE SALTO (Acessibilidade para Leitores de Tela) -->
     <a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
 
     <div class="app-layout">
         
-        <!-- SIDEBAR: Role navigation ajuda o leitor de tela a identificar o menu -->
+        <!-- SIDEBAR DE NAVEGAÇÃO -->
         <aside class="side-panel" role="navigation" aria-label="Menu Lateral">
             <div class="brand">
                 <div class="brand-icon" aria-hidden="true"><i class="fas fa-brain"></i></div>
                 <h2>Overflowia.AI</h2>
             </div>
             
-            <!-- FERRAMENTAS DE ACESSIBILIDADE -->
+            <!-- Ferramenta de Acessibilidade: Alto Contraste -->
             <div class="accessibility-tools" style="margin-bottom: 20px; padding: 10px; border-bottom: 1px solid var(--border-color);">
                 <button id="toggle-contrast" class="nav-btn secondary-btn" style="width: 100%;" aria-label="Ativar Alto Contraste">
                     <i class="fas fa-adjust" aria-hidden="true"></i> Alto Contraste
@@ -44,60 +47,52 @@
                 </a>
             </div>
 
+            <!-- Sugestões Rápidas de Dúvidas Técnicas -->
             <div class="history-section" aria-label="Histórico de conversas">
-                <h3>Histórico Recente</h3>
+                <h3>Sugestões Rápidas</h3>
                 <ul class="chat-list">
-                    <li class="active" tabindex="0"><i class="far fa-message" aria-hidden="true"></i> Como centralizar uma div?</li>
-                    <li tabindex="0"><i class="far fa-message" aria-hidden="true"></i> Estrutura em Node JS</li>
+                    <li onclick="window.inserirExemplo('Como criar uma API REST completa com autenticação JWT e MongoDB em Node.js?')" tabindex="0">
+                        <i class="far fa-message" aria-hidden="true"></i> API REST + JWT Node.js
+                    </li>
+                    <li onclick="window.inserirExemplo('Como centralizar uma div e criar um layout responsivo moderno com Flexbox e Grid?')" tabindex="0">
+                        <i class="far fa-message" aria-hidden="true"></i> Layout Flexbox vs Grid
+                    </li>
+                    <li onclick="window.inserirExemplo('Como funciona a arquitetura RAG (Retrieval-Augmented Generation) com modelos LLM?')" tabindex="0">
+                        <i class="far fa-message" aria-hidden="true"></i> O que é Arquitetura RAG?
+                    </li>
                 </ul>
             </div>
 
-            <!-- Inject JS Lateral Universal do PFC -->
+            <!-- Injeção do Perfil do Usuário Logado -->
             <div id="sidebar-auth-wrapper"></div>
         </aside>
 
-        <!-- CONTEÚDO PRINCIPAL -->
+        <!-- ÁREA PRINCIPAL DO CHAT -->
         <main class="chat-container" id="main-content" role="main">
             <header class="top-bar">
                 <div class="current-chat-title">
-                    <h1>Como centralizar uma div?</h1>
-                    <span class="model-badge" aria-label="Modelo: Overflowia Assistant">Overflowia Assistant</span>
+                    <h1>Assistente Técnico Inteligente</h1>
+                    <span class="model-badge" aria-label="Modelo ativo: Gemini 2.5 + RAG Local">Gemini 2.5 Flash + RAG Local</span>
                 </div>
             </header>
 
-            <!-- ARIA-LIVE: "polite" faz o leitor de tela ler automaticamente as novas mensagens da IA -->
+            <!-- Histórico de Mensagens com Leitura Assistiva -->
             <div class="messages-area" id="chat-messages" aria-live="polite">
                 
-                <!-- Mensagem do Usuário -->
-                <article class="message user-message">
-                    <div class="message-content">
-                        <p>Como centralizo uma Div horizontalmente no centro?</p>
-                    </div>
-                </article>
-
-                <!-- Mensagem da IA -->
+                <!-- Mensagem Inicial da IA -->
                 <article class="message ai-message">
                     <div class="avatar-ai" aria-hidden="true"><i class="fas fa-robot"></i></div>
                     <div class="message-content">
-                        <p>Uma opção sólida hoje é usar <strong>Flexbox</strong>. Exemplo:</p>
-                        <div class="code-block" role="region" aria-label="Bloco de código CSS">
-                            <div class="code-header">
-                                <span>CSS (Flexbox)</span>
-                                <button class="icon-btn" aria-label="Copiar código"><i class="far fa-copy"></i></button>
-                            </div>
-                            <pre><code>.container {
-    display: flex;
-    justify-content: center;
-}</code></pre>
-                        </div>
+                        <p>Olá! Sou o assistente do <strong>Overflowia.AI</strong>. Estou conectado à base de conhecimento do fórum local via <strong>RAG</strong> e pronto para responder dúvidas técnicas complexas, depurar erros de código ou analisar prints e arquivos anexados.</p>
                     </div>
                 </article>
+
             </div>
 
-            <!-- ENTRADA DE DADOS -->
+            <!-- ENTRADA DE DADOS E ANEXOS -->
             <div class="input-container">
                 
-                <!-- Barra de Preview do Anexo (Injetada para dar suporte ao upload visual) -->
+                <!-- Barra de Pré-visualização do Anexo -->
                 <div id="attachment-preview-bar" class="attachment-preview-bar" style="display: none;">
                     <div class="attachment-badge">
                         <i class="fas fa-file-alt" id="preview-icon" aria-hidden="true"></i>
@@ -109,15 +104,13 @@
                 </div>
 
                 <div class="input-box">
-                    <!-- Botão de Anexo (Clipe de papel) -->
-                    <button class="attach-btn" aria-label="Anexar arquivo"><i class="fas fa-paperclip" aria-hidden="true"></i></button>
-                    
-                    <!-- Campo de arquivo oculto controlado pelo JavaScript -->
+                    <!-- Botão de Anexo (Upload de Prints e Arquivos) -->
+                    <button class="attach-btn" aria-label="Anexar arquivo ou print"><i class="fas fa-paperclip" aria-hidden="true"></i></button>
                     <input type="file" id="file-input" style="display: none;" accept="image/*,application/pdf,text/*">
                     
                     <textarea 
                         id="user-input"
-                        placeholder="Digite código ou pergunta RAG..." 
+                        placeholder="Digite sua dúvida ou cole código aqui (Shift+Enter para quebra de linha)..." 
                         rows="1" 
                         aria-label="Campo de entrada de pergunta"></textarea>
                     
@@ -125,15 +118,15 @@
                         <i class="fas fa-paper-plane" aria-hidden="true"></i>
                     </button>
                 </div>
+                
                 <div class="footer-text" role="note">
-                    Overflowia é assistida via Banco. Em casos extremos pergunte ao Fórum (Humanos).
-                    <br><strong>Compromisso ODS 4 e 10 da ONU.</strong>
+                    Overflowia.AI — Respostas técnicas enriquecidas com base no Fórum da Comunidade (Compromisso ODS 4 e 10 da ONU).
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Script Principal com a lógica de envio e Enter -->
+    <!-- Script de Interação do Chat -->
     <script src="index.js"></script>
 </body>
 </html>

@@ -3,94 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Postando Nova Regra - RAG System</title>
+    <title>Publicar Nova Dúvida - Overflowia.AI</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="forum.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- LINK DE SALTO (Acessibilidade) -->
+    <a href="#main-content" class="skip-link">Pular para o formulário principal</a>
+
     <div class="app-layout">
         
-        <aside class="side-panel">
+        <!-- SIDEBAR DE NAVEGAÇÃO -->
+        <aside class="side-panel" role="navigation" aria-label="Menu Lateral">
             <div class="brand">
-                <div class="brand-icon"><i class="fas fa-brain"></i></div>
-                <h2>Overflowia.AI Ask!</h2>
+                <div class="brand-icon" aria-hidden="true"><i class="fas fa-brain"></i></div>
+                <h2>Overflowia.AI</h2>
             </div>
             
-            <!-- FERRAMENTAS DE ACESSIBILIDADE: BOTÃO DE CONTRASTE -->
+            <!-- Ferramenta de Acessibilidade: Alto Contraste -->
             <div class="accessibility-tools" style="margin-bottom: 20px; padding: 10px; border-bottom: 1px solid var(--border-color);">
                 <button id="toggle-contrast" class="nav-btn secondary-btn" style="width: 100%;" aria-label="Ativar Alto Contraste">
                     <i class="fas fa-adjust" aria-hidden="true"></i> Alto Contraste
                 </button>
             </div>
             
-            <div class="nav-buttons">
-                <a href="index.html" class="nav-btn secondary-btn"><i class="fas fa-robot"></i> Cancelar Thread e Voltar IA chat Chat</a>
-                <a href="forum.html" class="nav-btn primary-btn"><i class="fas fa-users"></i> Descartar e Retornar Ver Postagens</a>
-            </div>
+            <nav class="nav-buttons" aria-label="Navegação rápida">
+                <a href="index.html" class="nav-btn secondary-btn"><i class="fas fa-robot" aria-hidden="true"></i> Voltar ao Chat IA</a>
+                <a href="forum.html" class="nav-btn primary-btn"><i class="fas fa-users" aria-hidden="true"></i> Ver Feed do Fórum</a>
+                <a href="sobre.html" class="nav-btn secondary-btn"><i class="fas fa-info-circle" aria-hidden="true"></i> Sobre o Projeto</a>
+            </nav>
 
-            <!-- Box Auth JS DOM Side Insert HTML UI Base Lateral Centralizado System  -->
+            <!-- Box Auth injetado via JS -->
             <div id="sidebar-auth-wrapper"></div>
         </aside>
 
-        <main class="chat-container">
+        <!-- CONTEÚDO PRINCIPAL DO FORMULÁRIO -->
+        <main class="chat-container" id="main-content" role="main">
             <header class="forum-header">
                 <div>
-                    <h1>Forneça Dados Contexto Detalhado! Human-in-The-Loop Engine Process Database IA Model Trainning: POST- RAG Engine Add Base</h1>
-                    <p class="subtitle">Adicionado via Storage Browser Persistencia ao vivo local Banco </p>
+                    <h1>Publicar Dúvida na Base de Conhecimento</h1>
+                    <p class="subtitle">Sua pergunta será compartilhada com a comunidade e indexada para enriquecer as respostas da IA (RAG).</p>
                 </div>
             </header>
 
             <div class="ask-container">
+                <!-- Caixa de Diretrizes da Comunidade -->
                 <div class="ask-guidelines">
-                    <i class="fas fa-server"></i>
+                    <i class="fas fa-lightbulb" aria-hidden="true"></i>
                     <div>
-                        <strong>Regra Server do Projeto Web  ! Importancia Acadêmica Do Arquivo Ask (Postar Context):</strong>
-                        <p>Submeta o ID Novo Context a IA na memória Base System do Post Feed!.</p>
+                        <strong>Dicas para uma boa publicação (Human-in-the-Loop):</strong>
+                        <p>Descreva o problema de forma clara, inclua mensagens de erro e contextualize seu código. Isso ajuda tanto a comunidade quanto o modelo de IA a encontrar soluções precisas.</p>
                     </div>
                 </div>
 
-                <form class="ask-form">
+                <!-- Formulário de Envio -->
+                <form class="ask-form" aria-label="Formulário de nova publicação">
                     
                     <div class="form-card">
-                        <label>Título Problem - Sintético Head Header Tittulos </label>
-                        <input type="text" id="ask-title" class="input-base" placeholder="Submissões. Title (Como fazer algo....)" required>
+                        <label for="ask-title">Título da Dúvida</label>
+                        <p class="field-hint">Seja específico e direto (ex: <em>Como tratar erros assíncronos no Express com Node.js?</em>)</p>
+                        <input type="text" id="ask-title" class="input-base" placeholder="Digite um título claro para o problema..." required>
                     </div>
 
                     <div class="form-card">
-                        <label>Estruturação Código  Apresentado Para Apreendizado Assistentes Model IA Dev Model ! RAG Descricoes Dores Do usuario Humano Interage</label>
+                        <label for="ask-desc">Descrição Detalhada e Código</label>
+                        <p class="field-hint">Explique o que você tentou fazer, o que esperava que acontecesse e cole os trechos de código relevantes.</p>
                         <div class="editor-wrapper">
-                            <textarea id="ask-desc" class="editor-textarea" placeholder="Dúvidas Longas? Suba Contextos do Bug, E Detalhes!" required></textarea>
+                            <textarea id="ask-desc" class="editor-textarea" placeholder="Descreva os detalhes, mensagens de erro do console e código aqui..." required></textarea>
                         </div>
                     </div>
 
+                    <!-- Destaque de Indexação RAG -->
                     <div class="ai-feature-box">
                         <div class="ai-feature-info">
-                            <i class="fas fa-robot text-bot-icon"></i>
+                            <i class="fas fa-robot text-bot-icon" aria-hidden="true"></i>
                             <div>
-                                <strong>Voz e Pre Analise Bot Trigger Hook Database Analys RAG Flow ! Process IA Rool Trigger Start WebHook Process IA (Bot Start Lógico Simul).</strong>
-                                <p>Geramos no submit A Visão Imediada Pro System Analisar.</p>
+                                <strong>Indexação Automática para o Assistente RAG</strong>
+                                <p>Ao publicar, esta dúvida passará a fazer parte da memória técnica consultada pelo chat inteligente.</p>
                             </div>
                         </div>
-                        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                        <label class="switch" aria-label="Ativar indexação automática">
+                            <input type="checkbox" checked disabled>
+                            <span class="slider"></span>
+                        </label>
                     </div>
 
                     <div class="form-actions">
-                        <button type="submit" class="submit-btn">Salvar No Array Data DOM JS Base Array Loc DB</button>
+                        <button type="submit" class="submit-btn">
+                            <i class="fas fa-paper-plane" aria-hidden="true"></i> Publicar no Fórum e Alimentar RAG
+                        </button>
+                        <a href="forum.html" class="cancel-link">Cancelar</a>
                     </div>
                 </form>
             </div>
         </main>
     </div>
     
+    <!-- Script de submissão ao MongoDB -->
     <script src="ask.js"></script>
 
-    <!-- Script de Integração de Acessibilidade (Contraste) -->
+    <!-- Script de Acessibilidade (Alto Contraste) -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const btnContrast = document.getElementById('toggle-contrast');
             
-            // Mantém o estado do contraste entre as páginas
             if (localStorage.getItem('highContrast') === 'true') {
                 document.body.classList.add('high-contrast');
             }

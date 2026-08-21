@@ -5,113 +5,143 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sobre o Projeto - Overflowia.AI</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="forum.css"> <!-- Reutilizando estilos de cards -->
+    <link rel="stylesheet" href="forum.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- LINK DE SALTO (Acessibilidade) -->
+    <a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
+
     <div class="app-layout">
         
-        <!-- Sidebar Acessível -->
+        <!-- SIDEBAR DE NAVEGAÇÃO -->
         <aside class="side-panel" role="navigation" aria-label="Menu Lateral">
             <div class="brand">
                 <div class="brand-icon" aria-hidden="true"><i class="fas fa-brain"></i></div>
                 <h2>Overflowia.AI</h2>
             </div>
             
-            <!-- FERRAMENTAS DE ACESSIBILIDADE: BOTÃO DE CONTRASTE -->
+            <!-- Ferramenta de Acessibilidade: Alto Contraste -->
             <div class="accessibility-tools" style="margin-bottom: 20px; padding: 10px; border-bottom: 1px solid var(--border-color);">
                 <button id="toggle-contrast" class="nav-btn secondary-btn" style="width: 100%;" aria-label="Ativar Alto Contraste">
                     <i class="fas fa-adjust" aria-hidden="true"></i> Alto Contraste
                 </button>
             </div>
             
-            <div class="nav-buttons">
-                <a href="index.html" class="nav-btn secondary-btn"><i class="fas fa-robot"></i> Chat com IA</a>
-                <a href="forum.html" class="nav-btn secondary-btn"><i class="fas fa-users"></i> Fórum Comunitário</a>
-                <button class="nav-btn primary-btn" aria-current="page"><i class="fas fa-info-circle"></i> Sobre o Projeto</button>
-            </div>
+            <nav class="nav-buttons" aria-label="Navegação do site">
+                <a href="index.html" class="nav-btn secondary-btn"><i class="fas fa-robot" aria-hidden="true"></i> Chat com IA</a>
+                <a href="forum.html" class="nav-btn secondary-btn"><i class="fas fa-users" aria-hidden="true"></i> Fórum Comunitário</a>
+                <button class="nav-btn primary-btn" aria-current="page"><i class="fas fa-info-circle" aria-hidden="true"></i> Sobre o Projeto</button>
+            </nav>
 
             <div id="sidebar-auth-wrapper"></div>
         </aside>
 
-        <main class="chat-container" id="main-content">
+        <!-- CONTEÚDO PRINCIPAL INSTITUCIONAL -->
+        <main class="chat-container" id="main-content" role="main">
             <header class="forum-header">
                 <div>
-                    <h1>Transparência e Impacto Social</h1>
-                    <p class="subtitle">Conheça os autores, nossos valores e nossa tecnologia inclusiva.</p>
+                    <h1>Transparência, Tecnologia e Impacto Social</h1>
+                    <p class="subtitle">Conheça os autores, a fundamentação acadêmica e o ecossistema inclusivo do Overflowia.AI.</p>
                 </div>
             </header>
 
             <div class="ask-container">
-                <!-- SEÇÃO 1: SOBRE OS AUTORES -->
+                
+                <!-- SEÇÃO 1: AUTORES E PROJETO ACADÊMICO (IFPR) -->
                 <article class="form-card">
                     <header>
-                        <h2 style="color: var(--accent-color); margin-bottom: 15px;">
-                            <i class="fas fa-users"></i> Sobre os Autores e o Projeto
+                        <h2 style="color: var(--accent-color); margin-bottom: 15px; font-size: 18px;">
+                            <i class="fas fa-graduation-cap" aria-hidden="true"></i> Autores e Origem Institucional
                         </h2>
                     </header>
                     <p style="line-height: 1.6; color: var(--text-primary);">
-                        O <strong>Overflowia.AI</strong> nasceu da necessidade de democratizar o acesso à informação técnica de alta qualidade. Acreditamos que a barreira entre a Inteligência Artificial e o desenvolvedor iniciante deve ser eliminada através de uma interface intuitiva e humana.
+                        O <strong>Overflowia.AI</strong> é um Projeto Final de Curso (PFC) desenvolvido no <strong>IFPR – Instituto Federal do Paraná (Campus Assis Chateaubriand)</strong>. O sistema combina uma plataforma colaborativa de dúvidas de programação com Inteligência Artificial baseada na arquitetura <strong>RAG (Retrieval-Augmented Generation)</strong>.
                     </p>
-                    <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <div class="ai-feature-box">
-                            <p><strong>[NOME DO AUTOR 1]</strong><br><small>Função / Especialidade</small></p>
-                        </div>
-                        <div class="ai-feature-box">
-                            <p><strong>[NOME DO AUTOR 2]</strong><br><small>Função / Especialidade</small></p>
-                        </div>
-                    </div>
-                </article>
-
-                <!-- SEÇÃO 2: ODS DA ONU -->
-                <article class="form-card">
-                    <h2 style="color: #4ade80; margin-bottom: 15px;">
-                        <i class="fas fa-globe-americas"></i> Compromisso com os ODS (ONU)
-                    </h2>
-                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                        <section style="flex: 1; min-width: 250px; background: rgba(74, 222, 128, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(74, 222, 128, 0.2);">
-                            <h3>ODS 4 - Educação de Qualidade</h3>
-                            <p><small>Garantir a educação inclusiva e equitativa de qualidade, promovendo oportunidades de aprendizado ao longo da vida para todos através da nossa IA assistiva.</small></p>
-                        </section>
-                        <section style="flex: 1; min-width: 250px; background: rgba(0, 210, 211, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(0, 210, 211, 0.2);">
-                            <h3>ODS 10 - Redução das Desigualdades</h3>
-                            <p><small>Focamos na inclusão digital, permitindo que estudantes de diferentes níveis socioeconômicos tenham acesso gratuito à mesma base de conhecimento RAG.</small></p>
-                        </section>
-                    </div>
-                </article>
-
-                <!-- SEÇÃO 3: ACESSIBILIDADE TÉCNICA -->
-                <article class="form-card">
-                    <h2 style="color: var(--bot-color); margin-bottom: 15px;">
-                        <i class="fas fa-universal-access"></i> Acessibilidade e Engenharia de Software
-                    </h2>
-                    <p style="margin-bottom: 15px;">Este site foi construído seguindo as diretrizes do WCAG para garantir que leitores de tela como <strong>NVDA e JAWS</strong> funcionem perfeitamente.</p>
                     
-                    <ul style="list-style: none; padding: 0; display: grid; gap: 10px;">
-                        <li><i class="fas fa-check text-green"></i> <strong>HTML Semântico:</strong> Uso de tags <code>&lt;main&gt;</code>, <code>&lt;nav&gt;</code> e <code>&lt;article&gt;</code> para navegação lógica.</li>
-                        <li><i class="fas fa-check text-green"></i> <strong>Atributos ARIA:</strong> Labels descritivos para elementos interativos.</li>
-                        <li><i class="fas fa-check text-green"></i> <strong>Alto Contraste:</strong> Paleta baseada em tons escuros (UI Dark Mode) com contraste de texto otimizado para baixa visão.</li>
-                        <li><i class="fas fa-check text-green"></i> <strong>Tags Alt:</strong> Todas as imagens e ícones possuem descrições para cegos.</li>
-                    </ul>
-
-                    <div class="code-block" style="margin-top: 20px;">
-                        <div class="code-header"><span>Exemplo de Acessibilidade no Código</span></div>
-                        <code>&lt;button aria-label="Enviar pergunta ao bot"&gt;
-  &lt;i class="fas fa-paper-plane" aria-hidden="true"&gt;&lt;/i&gt;
-&lt;/button&gt;</code>
+                    <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="ai-feature-box">
+                            <p><strong>Nicolas Chambo Amaral Calisto</strong><br><small style="color: var(--text-secondary);">Desenvolvedor Full-Stack</small></p>
+                        </div>
+                        <div class="ai-feature-box">
+                            <p><strong>Bruno Cortarelli Graciano</strong><br><small style="color: var(--text-secondary);">Desenvolvedor Full-Stack</small></p>
+                        </div>
+                        <div class="ai-feature-box">
+                            <p><strong>Eduardo José de Lima Dmengeon</strong><br><small style="color: var(--text-secondary);">Desenvolvedor Full-Stack</small></p>
+                        </div>
+                        <div class="ai-feature-box">
+                            <p><strong>Vinicius Yuji Miaki</strong><br><small style="color: var(--text-secondary);">Desenvolvedor Full-Stack</small></p>
+                        </div>
                     </div>
+
+                    <div style="margin-top: 15px; padding: 12px 15px; background: rgba(123, 97, 255, 0.08); border-radius: 8px; border: 1px solid var(--accent-color);">
+                        <p style="font-size: 13px; margin: 0; color: var(--text-primary);">
+                            <i class="fas fa-chalkboard-teacher text-green" aria-hidden="true"></i> <strong>Orientação Acadêmica:</strong> Prof. Vagner Simões Santos
+                        </p>
+                    </div>
+                </article>
+
+                <!-- SEÇÃO 2: COMPROMISSO COM OS ODS DA ONU -->
+                <article class="form-card">
+                    <header>
+                        <h2 style="color: #4ade80; margin-bottom: 15px; font-size: 18px;">
+                            <i class="fas fa-globe-americas" aria-hidden="true"></i> Compromisso com os Objetivos de Desenvolvimento Sustentável (ONU)
+                        </h2>
+                    </header>
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                        <section style="flex: 1; min-width: 260px; background: rgba(74, 222, 128, 0.05); padding: 18px; border-radius: 8px; border: 1px solid rgba(74, 222, 128, 0.2);">
+                            <h3 style="color: #4ade80; font-size: 15px; margin-bottom: 8px;">
+                                <i class="fas fa-book-reader" aria-hidden="true"></i> ODS 4 — Educação de Qualidade
+                            </h3>
+                            <p style="font-size: 13px; line-height: 1.5; color: var(--text-primary); margin: 0;">
+                                Democratizar o aprendizado técnico de programação através de um assistente de IA didático integrado com a base de conhecimento do fórum estudantil.
+                            </p>
+                        </section>
+                        
+                        <section style="flex: 1; min-width: 260px; background: rgba(0, 210, 211, 0.05); padding: 18px; border-radius: 8px; border: 1px solid rgba(0, 210, 211, 0.2);">
+                            <h3 style="color: var(--bot-color); font-size: 15px; margin-bottom: 8px;">
+                                <i class="fas fa-hands-helping" aria-hidden="true"></i> ODS 10 — Redução das Desigualdades
+                            </h3>
+                            <p style="font-size: 13px; line-height: 1.5; color: var(--text-primary); margin: 0;">
+                                Garantir que qualquer estudante, independentemente de sua condição visual ou socioeconômica, tenha acesso gratuito e acessível às melhores ferramentas de computação.
+                            </p>
+                        </section>
+                    </div>
+                </article>
+
+                <!-- SEÇÃO 3: ACESSIBILIDADE E ARQUITETURA DE SOFTWARE -->
+                <article class="form-card">
+                    <header>
+                        <h2 style="color: var(--bot-color); margin-bottom: 15px; font-size: 18px;">
+                            <i class="fas fa-universal-access" aria-hidden="true"></i> Engenharia de Acessibilidade (WCAG AAA)
+                        </h2>
+                    </header>
+                    <p style="margin-bottom: 15px; line-height: 1.5;">A interface foi projetada para garantir compatibilidade plena com tecnologias assistivas e leitores de tela como <strong>NVDA, JAWS e VoiceOver</strong>:</p>
+                    
+                    <ul style="list-style: none; padding: 0; display: grid; gap: 12px; font-size: 14px;">
+                        <li><i class="fas fa-check-circle text-green" aria-hidden="true"></i> <strong>HTML5 Semântico:</strong> Uso estrito de tags de navegação estruturada (<code>&lt;main&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;aside&gt;</code>, <code>&lt;article&gt;</code>).</li>
+                        <li><i class="fas fa-check-circle text-green" aria-hidden="true"></i> <strong>Live Regions (ARIA):</strong> Uso de <code>aria-live="polite"</code> para anunciar mensagens da IA em tempo real aos deficientes visuais.</li>
+                        <li><i class="fas fa-check-circle text-green" aria-hidden="true"></i> <strong>Alto Contraste WCAG AAA:</strong> Paleta com preto puro (<code>#000000</code>), texto em amarelo de alto contraste (<code>#ffff00</code>) e contorno de foco em vermelho.</li>
+                        <li><i class="fas fa-check-circle text-green" aria-hidden="true"></i> <strong>Persistência em Nuvem:</strong> Banco de dados <strong>MongoDB Atlas</strong> para armazenar postagens do fórum e histórico de conversas.</li>
+                    </ul>
                 </article>
             </div>
+            
+            <footer style="padding: 20px; text-align: center; font-size: 11px; color: var(--text-secondary);">
+                Overflowia.AI — IFPR Campus Assis Chateaubriand | Engenharia de Software e Inteligência Artificial.
+            </footer>
         </main>
     </div>
-    <script src="forum.js"></script> <!-- Reutiliza a lógica de login lateral -->
 
-    <!-- Script de Integração de Acessibilidade (Contraste) -->
+    <!-- Script de autenticação e acessibilidade -->
+    <script src="forum.js"></script>
+
+    <!-- Script de Alto Contraste -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const btnContrast = document.getElementById('toggle-contrast');
             
-            // Mantém o estado do contraste entre as páginas
             if (localStorage.getItem('highContrast') === 'true') {
                 document.body.classList.add('high-contrast');
             }

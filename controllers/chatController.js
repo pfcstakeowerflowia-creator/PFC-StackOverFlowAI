@@ -1,27 +1,29 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const Post = require("../models/Post");
+const Chat = require("../models/Chat");
 
+// 1. Enviar Mensagem, Consultar RAG e Salvar Interação no MongoDB
 exports.enviarMensagem = async (req, res) => {
     try {
         const msgUsuario = req.body.mensagem || "";
         const arquivoUsuario = req.body.arquivo;
+        let chatId = req.body.chatId;
 
-        // Limpa e valida a chave da API (aceita GEMINI_API_KEY ou API_KEY)
+        // Limpa e valida a chave da API
         const rawKey = process.env.GEMINI_API_KEY || process.env.API_KEY || process.env.GOOGLE_API_KEY || "";
         const apiKey = rawKey.trim().replace(/^["']|["']$/g, '');
 
         if (!apiKey) {
-            console.error("❌ Erro: GEMINI_API_KEY não configurada no .env");
             return res.json({
-                resposta: "⚠️ **Erro de Configuração:** A chave `GEMINI_API_KEY` não foi encontrada no arquivo `.env` do servidor."
+                resposta: "⚠️ **Chave de API não configurada:** Adicione a variável `GEMINI_API_KEY` ao arquivo `.env` do servidor."
             });
         }
 
-        // 1. RAG: Busca semântica segura no MongoDB (posts do fórum)
+        // --- ETAPA 1: RAG (Recuperação de dúvidas relevantes no Fórum MongoDB) ---
         let contextoDb = [];
         try {
             if (msgUsuario.trim().length > 0) {
-                // Remove caracteres especiais para evitar quebrar o regex do Mongo com termos como 'C++', '[]', etc.
+                // Remove caracteres especiais para evitar erros no Regex do Mongo (ex: C++, [], ())
                 const palavrasChave = msgUsuario
                     .replace(/[^\w\sÀ-ú]/gi, '')
                     .split(/\s+/)
@@ -40,14 +42,14 @@ exports.enviarMensagem = async (req, res) => {
                 }
             }
         } catch (dbErr) {
-            console.warn("⚠️ Aviso RAG (busca ignorada):", dbErr.message);
+            console.warn("⚠️ Aviso RAG (busca textual ignorada):", dbErr.message);
         }
 
         const textoContexto = contextoDb.length > 0
             ? contextoDb.map(p => `• [Tópico Fórum]: "${p.titulo}"\n  Conteúdo/Solução: ${p.desc}`).join("\n\n")
             : "Nenhum post relevante encontrado no fórum local.";
 
-        // 2. Montagem das instruções do sistema e prompt
+        // --- ETAPA 2: Engenharia de Prompt e Instrução do Sistema ---
         const systemInstruction = `Você é o Overflowia.AI, uma inteligência artificial especialista em programação, algoritmos e engenharia de software.
 
 DIRETRIZES:
@@ -62,7 +64,7 @@ ${textoContexto}`;
         const promptPrincipal = msgUsuario || "Analise o arquivo anexado e apresente a solução técnica completa.";
         const parts = [promptPrincipal];
 
-        // Adiciona arquivo/print multimodal se enviado pelo usuário
+        // Anexo multimodal se enviado pelo usuário
         if (arquivoUsuario && arquivoUsuario.base64 && arquivoUsuario.mimeType) {
             parts.push({
                 inlineData: {
@@ -72,26 +74,18 @@ ${textoContexto}`;
             });
         }
 
-        // 3. Inicialização com lista de modelos (do mais moderno ao fallback)
+        // --- ETAPA 3: Geração com Gemini (Fallback em cascata) ---
         const genAI = new GoogleGenerativeAI(apiKey);
-        const modelosParaTentar = [
-            "gemini-2.5-flash",
-            "gemini-2.5-pro",
-            "gemini-2.0-flash",
-            "gemini-1.5-flash"
-        ];
-
+        const modelos = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-1.5-flash"];
         let respostaTexto = null;
         let erroUltimo = null;
 
-        for (const nomeModelo of modelosParaTentar) {
+        for (const nomeModelo of modelos) {
             try {
                 const model = genAI.getGenerativeModel({
                     model: nomeModelo,
                     systemInstruction: systemInstruction,
-                    generationConfig: {
-                        temperature: 0.7
-                    }
+                    generationConfig: { temperature: 0.7 }
                 });
 
                 const result = await model.generateContent(parts);
@@ -99,25 +93,109 @@ ${textoContexto}`;
                 respostaTexto = response.text();
 
                 if (respostaTexto) {
-                    console.log(`✅ Resposta gerada com sucesso via modelo: ${nomeModelo}`);
+                    console.log(`✅ Resposta gerada via modelo: ${nomeModelo}`);
                     break;
                 }
             } catch (errModelo) {
                 erroUltimo = errModelo;
-                console.warn(`⚠️ Tentativa com ${nomeModelo} falhou (${errModelo.message}). Tentando próximo modelo...`);
+                console.warn(`⚠️ Modelo ${nomeModelo} falhou. Tentando próximo da lista...`);
             }
         }
 
-        if (respostaTexto) {
-            return res.json({ resposta: respostaTexto });
-        } else {
-            throw erroUltimo || new Error("Nenhum modelo da lista conseguiu responder à solicitação.");
+        if (!respostaTexto) {
+            throw erroUltimo || new Error("Falha ao comunicar com os modelos de IA.");
         }
+
+        // --- ETAPA 4: Persistência do Chat no MongoDB Atlas ---
+        let chatDoc = null;
+        const dadosMsgUsuario = {
+            sender: 'user',
+            text: msgUsuario,
+            attachment: arquivoUsuario ? { name: arquivoUsuario.name, mimeType: arquivoUsuario.mimeType } : null
+        };
+        const dadosMsgIA = {
+            sender: 'ai',
+            text: respostaTexto
+        };
+
+        if (chatId) {
+            // Conversa existente: anexa as mensagens ao documento
+            chatDoc = await Chat.findById(chatId);
+            if (chatDoc) {
+                chatDoc.messages.push(dadosMsgUsuario);
+                chatDoc.messages.push(dadosMsgIA);
+                chatDoc.updatedAt = new Date();
+                await chatDoc.save();
+            }
+        }
+
+        if (!chatDoc) {
+            // Nova conversa: cria um novo registro no MongoDB
+            const tituloSintetico = msgUsuario.length > 35 
+                ? msgUsuario.substring(0, 35) + "..." 
+                : (msgUsuario || "Análise de Arquivo / Código");
+
+            chatDoc = new Chat({
+                title: tituloSintetico,
+                author: "Aluno PFC Logado",
+                messages: [dadosMsgUsuario, dadosMsgIA]
+            });
+            await chatDoc.save();
+            chatId = chatDoc._id;
+        }
+
+        // Retorna a resposta junto com o ID e título da conversa no MongoDB
+        return res.json({
+            resposta: respostaTexto,
+            chatId: chatDoc._id,
+            title: chatDoc.title
+        });
 
     } catch (error) {
         console.error("❌ Erro no chatController:", error.message);
         return res.json({
-            resposta: `⚠️ **Falha no processamento da IA:**\n\n\`${error.message}\`\n\n*Dica: Verifique se sua GEMINI_API_KEY é válida e possui cotas ativas no Google AI Studio.*`
+            resposta: `⚠️ **Falha no processamento da IA:**\n\n\`${error.message}\`\n\n*Dica: Verifique se sua GEMINI_API_KEY no .env é válida.*`
         });
+    }
+};
+
+// 2. Listar todas as conversas salvas no MongoDB (para preencher a sidebar)
+exports.listarConversas = async (req, res) => {
+    try {
+        const conversas = await Chat.find({}, '_id title updatedAt createdAt')
+            .sort({ updatedAt: -1 })
+            .limit(25);
+        return res.json(conversas);
+    } catch (error) {
+        console.error("Erro ao listar conversas:", error.message);
+        return res.status(500).json({ error: "Erro ao listar conversas do banco." });
+    }
+};
+
+// 3. Obter uma conversa específica com todas as mensagens anteriores
+exports.obterConversaPorId = async (req, res) => {
+    try {
+        const conversa = await Chat.findById(req.params.id);
+        if (!conversa) {
+            return res.status(404).json({ error: "Conversa não encontrada." });
+        }
+        return res.json(conversa);
+    } catch (error) {
+        console.error("Erro ao carregar histórico:", error.message);
+        return res.status(500).json({ error: "Erro ao buscar histórico da conversa." });
+    }
+};
+
+// 4. Excluir uma conversa do MongoDB
+exports.excluirConversa = async (req, res) => {
+    try {
+        const chatExcluido = await Chat.findByIdAndDelete(req.params.id);
+        if (!chatExcluido) {
+            return res.status(404).json({ error: "Conversa não encontrada para exclusão." });
+        }
+        return res.json({ success: true, message: "Conversa excluída com sucesso." });
+    } catch (error) {
+        console.error("Erro ao excluir conversa:", error.message);
+        return res.status(500).json({ error: "Erro ao excluir conversa do banco." });
     }
 };

@@ -16,7 +16,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <!-- LINK DE SALTO (Acessibilidade para Leitores de Tela) -->
+    <!-- LINK DE SALTO (Acessibilidade) -->
     <a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
 
     <div class="app-layout">
@@ -29,13 +29,20 @@
             </div>
             
             <!-- Ferramenta de Acessibilidade: Alto Contraste -->
-            <div class="accessibility-tools" style="margin-bottom: 20px; padding: 10px; border-bottom: 1px solid var(--border-color);">
+            <div class="accessibility-tools" style="margin-bottom: 15px; padding: 10px; border-bottom: 1px solid var(--border-color);">
                 <button id="toggle-contrast" class="nav-btn secondary-btn" style="width: 100%;" aria-label="Ativar Alto Contraste">
                     <i class="fas fa-adjust" aria-hidden="true"></i> Alto Contraste
                 </button>
             </div>
 
-            <div class="nav-buttons">
+            <!-- Botão de Ação: Iniciar Nova Conversa -->
+            <div style="margin-bottom: 15px;">
+                <button id="btn-new-chat" class="nav-btn primary-btn" style="width: 100%; border-style: dashed; justify-content: center;" aria-label="Iniciar nova conversa">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Nova Conversa
+                </button>
+            </div>
+
+            <nav class="nav-buttons" aria-label="Navegação do site">
                 <button class="nav-btn primary-btn" aria-current="page">
                     <i class="fas fa-robot" aria-hidden="true"></i> Chat com IA
                 </button>
@@ -45,20 +52,14 @@
                 <a href="sobre.html" class="nav-btn secondary-btn">
                     <i class="fas fa-info-circle" aria-hidden="true"></i> Sobre o Projeto
                 </a>
-            </div>
+            </nav>
 
-            <!-- Sugestões Rápidas de Dúvidas Técnicas -->
-            <div class="history-section" aria-label="Histórico de conversas">
-                <h3>Sugestões Rápidas</h3>
-                <ul class="chat-list">
-                    <li onclick="window.inserirExemplo('Como criar uma API REST completa com autenticação JWT e MongoDB em Node.js?')" tabindex="0">
-                        <i class="far fa-message" aria-hidden="true"></i> API REST + JWT Node.js
-                    </li>
-                    <li onclick="window.inserirExemplo('Como centralizar uma div e criar um layout responsivo moderno com Flexbox e Grid?')" tabindex="0">
-                        <i class="far fa-message" aria-hidden="true"></i> Layout Flexbox vs Grid
-                    </li>
-                    <li onclick="window.inserirExemplo('Como funciona a arquitetura RAG (Retrieval-Augmented Generation) com modelos LLM?')" tabindex="0">
-                        <i class="far fa-message" aria-hidden="true"></i> O que é Arquitetura RAG?
+            <!-- Histórico Dinâmico de Conversas Salvas no MongoDB Atlas -->
+            <div class="history-section" aria-label="Histórico de conversas salvas no MongoDB">
+                <h3>Histórico no MongoDB</h3>
+                <ul class="chat-list" id="chat-history-list">
+                    <li style="color: var(--text-secondary); font-size: 12px; padding: 8px;">
+                        <i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i> Carregando conversas do banco...
                     </li>
                 </ul>
             </div>
@@ -67,31 +68,27 @@
             <div id="sidebar-auth-wrapper"></div>
         </aside>
 
-        <!-- ÁREA PRINCIPAL DO CHAT -->
+        <!-- CONTEÚDO PRINCIPAL DO CHAT -->
         <main class="chat-container" id="main-content" role="main">
             <header class="top-bar">
                 <div class="current-chat-title">
-                    <h1>Assistente Técnico Inteligente</h1>
-                    <span class="model-badge" aria-label="Modelo ativo: Gemini 2.5 + RAG Local">Gemini 2.5 Flash + RAG Local</span>
+                    <h1 id="current-chat-header-title">Assistente Técnico Inteligente</h1>
+                    <span class="model-badge" aria-label="Modelo ativo: Gemini 2.5 + RAG Local">Gemini 2.5 Flash + MongoDB RAG</span>
                 </div>
             </header>
 
             <!-- Histórico de Mensagens com Leitura Assistiva -->
             <div class="messages-area" id="chat-messages" aria-live="polite">
-                
-                <!-- Mensagem Inicial da IA -->
                 <article class="message ai-message">
                     <div class="avatar-ai" aria-hidden="true"><i class="fas fa-robot"></i></div>
                     <div class="message-content">
-                        <p>Olá! Sou o assistente do <strong>Overflowia.AI</strong>. Estou conectado à base de conhecimento do fórum local via <strong>RAG</strong> e pronto para responder dúvidas técnicas complexas, depurar erros de código ou analisar prints e arquivos anexados.</p>
+                        <p>Olá! Sou o assistente do <strong>Overflowia.AI</strong>. Todas as nossas conversas agora são persistidas em nuvem no <strong>MongoDB Atlas</strong> e integradas ao conhecimento do fórum local via <strong>RAG</strong>.</p>
                     </div>
                 </article>
-
             </div>
 
             <!-- ENTRADA DE DADOS E ANEXOS -->
             <div class="input-container">
-                
                 <!-- Barra de Pré-visualização do Anexo -->
                 <div id="attachment-preview-bar" class="attachment-preview-bar" style="display: none;">
                     <div class="attachment-badge">
@@ -104,8 +101,7 @@
                 </div>
 
                 <div class="input-box">
-                    <!-- Botão de Anexo (Upload de Prints e Arquivos) -->
-                    <button class="attach-btn" aria-label="Anexar arquivo ou print"><i class="fas fa-paperclip" aria-hidden="true"></i></button>
+                    <button class="attach-btn" aria-label="Anexar print de erro ou arquivo de código"><i class="fas fa-paperclip" aria-hidden="true"></i></button>
                     <input type="file" id="file-input" style="display: none;" accept="image/*,application/pdf,text/*">
                     
                     <textarea 
@@ -120,13 +116,13 @@
                 </div>
                 
                 <div class="footer-text" role="note">
-                    Overflowia.AI — Respostas técnicas enriquecidas com base no Fórum da Comunidade (Compromisso ODS 4 e 10 da ONU).
+                    Overflowia.AI — Histórico sincronizado em nuvem no MongoDB Atlas (Compromisso ODS 4 e 10 da ONU).
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Script de Interação do Chat -->
+    <!-- Script de Integração com o Backend -->
     <script src="index.js"></script>
 </body>
 </html>

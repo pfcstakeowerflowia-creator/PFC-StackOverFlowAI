@@ -1,14 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Verificação de Autenticação
+    // 1. Verificação de Autenticação e Perfil
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     renderizarPerfilLateral(isLoggedIn);
 
-    // 2. Controle de Acessibilidade (Alto Contraste)
+    // 2. Controle de Acessibilidade (Modo de Alto Contraste)
     const btnContrast = document.getElementById('toggle-contrast');
     if (localStorage.getItem('highContrast') === 'true') {
         document.body.classList.add('high-contrast');
     }
-
     if (btnContrast) {
         btnContrast.addEventListener('click', () => {
             const isEnabled = document.body.classList.toggle('high-contrast');
@@ -16,12 +15,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 3. Mapeamento de Elementos do Chat
+    // 3. Mapeamento de Elementos do DOM
     const chatInputBtn = document.getElementById('btn-send');
     const chatTextArea = document.getElementById('user-input');
     const msgArea = document.getElementById('chat-messages');
+    const btnNewChat = document.getElementById('btn-new-chat');
+    const chatHeaderTitle = document.getElementById('current-chat-header-title');
 
-    // 4. Mapeamento de Elementos de Anexo
     const fileInput = document.getElementById('file-input');
     const attachBtn = document.querySelector('.attach-btn');
     const previewBar = document.getElementById('attachment-preview-bar');
@@ -30,8 +30,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const removeAttachmentBtn = document.getElementById('btn-remove-attachment');
 
     let selectedFile = null;
+    let currentChatId = null; // ID da conversa ativa no MongoDB Atlas
 
-    // Gerenciador de Seleção de Arquivo / Print
+    // Detecção dinâmica da URL da API (Local vs Produção no Render)
+    const BASE_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
+        ? 'http://localhost:3000/api'
+        : 'https://pfc-stackoverflowai.onrender.com/api';
+
+    // 4. Carregamento Inicial do Histórico vindo do MongoDB
+    carregarHistoricoSidebar();
+
+    // Evento: Iniciar Nova Conversa Limpa
+    if (btnNewChat) {
+        btnNewChat.addEventListener('click', () => {
+            iniciarNovoChat();
+        });
+    }
+
+    // Gerenciador de Seleção de Anexos (Imagens / Prints de Erro)
     if (attachBtn && fileInput) {
         attachBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -42,7 +58,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const file = e.target.files[0];
             if (!file) return;
 
-            // Limite de segurança de até 15MB
             if (file.size > 15 * 1024 * 1024) {
                 alert("O arquivo excede o limite permitido de 15MB!");
                 fileInput.value = '';
@@ -81,18 +96,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Função Global para preencher o chat com sugestões rápidas
-    window.inserirExemplo = function(texto) {
-        if (chatTextArea) {
-            chatTextArea.value = texto;
-            chatTextArea.focus();
-            chatTextArea.dispatchEvent(new Event('input'));
-        }
-    };
-
-    // 5. Configuração de Envio e Redimensionamento Automático
+    // 5. Envio de Mensagens e Redimensionamento Automático
     if (chatInputBtn && chatTextArea && msgArea) {
-        
         chatInputBtn.addEventListener('click', (e) => {
             e.preventDefault();
             enviarMsgChat();
@@ -123,21 +128,19 @@ document.addEventListener("DOMContentLoaded", () => {
             const msgDigitada = chatTextArea.value.trim();
             if (!msgDigitada && !selectedFile) return;
 
-            // Renderiza o anexo no balão do usuário se houver
+            // Renderiza anexo na bolha do usuário
             let attachmentHTML = '';
             if (selectedFile) {
                 if (selectedFile.mimeType.startsWith('image/')) {
-                    attachmentHTML = `<div style="margin-top: 10px;"><img src="data:${selectedFile.mimeType};base64,${selectedFile.base64}" style="max-width: 280px; max-height: 200px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);" alt="Anexo enviado"></div>`;
+                    attachmentHTML = `<div style="margin-top: 10px;"><img src="data:${selectedFile.mimeType};base64,${selectedFile.base64}" style="max-width: 280px; max-height: 200px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);" alt="Anexo"></div>`;
                 } else {
-                    attachmentHTML = `<div style="margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 8px; font-size: 13px;">
-                        <i class="fas fa-paperclip"></i> <span>${selectedFile.name}</span>
-                    </div>`;
+                    attachmentHTML = `<div style="margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 8px; font-size: 13px;"><i class="fas fa-paperclip"></i> <span>${selectedFile.name}</span></div>`;
                 }
             }
 
             const safeMsg = msgDigitada.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-            // Exibe mensagem do usuário
+            // Exibe mensagem do usuário imediatamente na tela
             msgArea.insertAdjacentHTML('beforeend', `
             <article class="message user-message" style="margin-top: 20px;">
                 <div class="message-content"> 
@@ -147,8 +150,6 @@ document.addEventListener("DOMContentLoaded", () => {
             </article>`);
 
             const backupFileToSend = selectedFile;
-
-            // Limpa o formulário
             chatTextArea.value = ''; 
             chatTextArea.style.height = '24px'; 
             selectedFile = null;
@@ -156,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (previewBar) previewBar.style.display = 'none';
             msgArea.scrollTop = msgArea.scrollHeight;
 
-            // Exibe indicador de carregamento
+            // Indicador de Carregamento
             const iconeOriginalBtn = chatInputBtn.innerHTML; 
             chatInputBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; 
             chatInputBtn.disabled = true;
@@ -166,25 +167,19 @@ document.addEventListener("DOMContentLoaded", () => {
             <article class="message ai-message" id="${loadingId}">
                 <div class="avatar-ai" aria-hidden="true"><i class="fas fa-robot"></i></div>
                 <div class="message-content">
-                    <p style="color: var(--text-secondary);">
-                        <i class="fas fa-circle-notch fa-spin"></i> Consultando base do Fórum (RAG) e formulando resposta técnica...
-                    </p>
+                    <p style="color: var(--text-secondary);"><i class="fas fa-circle-notch fa-spin"></i> Consultando base do Fórum (RAG) e salvando no MongoDB...</p>
                 </div>
             </article>`);
             msgArea.scrollTop = msgArea.scrollHeight;
 
-            // URL da API dinâmica (Local vs Produção Render)
-            const URL_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
-                ? 'http://localhost:3000/api/chat'
-                : 'https://pfc-stackoverflowai.onrender.com/api/chat';
-
             try {
-                const response = await fetch(URL_API, {
+                const response = await fetch(`${BASE_API}/chat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         mensagem: msgDigitada,
-                        arquivo: backupFileToSend
+                        arquivo: backupFileToSend,
+                        chatId: currentChatId
                     })
                 });
 
@@ -193,7 +188,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 const loadingElement = document.getElementById(loadingId);
                 if (loadingElement) loadingElement.remove();
 
-                // Converte Markdown e sanitiza com DOMPurify
+                // Atualiza o ID da conversa ativa e o título no cabeçalho
+                if (data.chatId) {
+                    currentChatId = data.chatId;
+                    if (chatHeaderTitle && data.title) {
+                        chatHeaderTitle.innerText = data.title;
+                    }
+                    carregarHistoricoSidebar();
+                }
+
+                // Converte Markdown seguro com DOMPurify
                 const rawHTML = marked.parse(data.resposta || "Nenhuma resposta retornada.");
                 const cleanHTML = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(rawHTML) : rawHTML;
 
@@ -205,7 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                 </article>`);
 
-                // Aplica realce de sintaxe com Highlight.js em blocos de código
+                // Aplica destaque de sintaxe em códigos
                 if (typeof hljs !== 'undefined') {
                     document.querySelectorAll('pre code').forEach((block) => {
                         hljs.highlightElement(block);
@@ -214,7 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
             } catch (error) {
-                console.error("Erro na requisição:", error);
+                console.error("Erro na comunicação com a API:", error);
                 const loadingElement = document.getElementById(loadingId);
                 if (loadingElement) loadingElement.remove();
 
@@ -222,7 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <article class="message ai-message">
                     <div class="avatar-ai"><i class="fas fa-exclamation-triangle" style="color:#f43f5e;"></i></div>
                     <div class="message-content" style="border-color:#f43f5e; color:#f43f5e;">
-                        <strong>[Erro de Comunicação]:</strong> ${error.message}
+                        <strong>[Erro de Conexão]:</strong> ${error.message}
                     </div>
                 </article>`);
             } finally {
@@ -232,9 +236,141 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
     }
+
+    // 6. Funções de Gestão de Conversas com o MongoDB Atlas
+    async function carregarHistoricoSidebar() {
+        const listContainer = document.getElementById('chat-history-list');
+        if (!listContainer) return;
+
+        try {
+            const res = await fetch(`${BASE_API}/chats`);
+            if (!res.ok) throw new Error("Erro ao buscar histórico");
+            const chats = await res.json();
+
+            listContainer.innerHTML = '';
+
+            if (chats.length === 0) {
+                listContainer.innerHTML = `<li style="color: var(--text-secondary); font-size: 12px; padding: 8px;">Nenhuma conversa anterior salva no banco.</li>`;
+                return;
+            }
+
+            chats.forEach(c => {
+                const isActive = c._id === currentChatId ? 'active' : '';
+                const li = document.createElement('li');
+                li.className = isActive;
+                li.tabIndex = 0;
+                li.style.display = 'flex';
+                li.style.justifyContent = 'space-between';
+                li.style.alignItems = 'center';
+
+                li.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; cursor:pointer;" title="${c.title}">
+                        <i class="far fa-message"></i> <span>${c.title}</span>
+                    </div>
+                    <button class="btn-delete-chat" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; padding:4px; transition: color 0.2s;" title="Excluir conversa">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                `;
+
+                // Clicar no título da conversa restaura as mensagens
+                li.querySelector('div').addEventListener('click', () => {
+                    carregarConversaPorId(c._id, c.title);
+                });
+
+                // Clicar na lixeira remove a conversa do banco
+                li.querySelector('.btn-delete-chat').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    excluirConversa(c._id);
+                });
+
+                listContainer.appendChild(li);
+            });
+
+        } catch (err) {
+            listContainer.innerHTML = `<li style="color: #f43f5e; font-size: 11px; padding: 8px;">Falha ao carregar histórico do banco.</li>`;
+        }
+    }
+
+    async function carregarConversaPorId(id, titulo) {
+        try {
+            const res = await fetch(`${BASE_API}/chats/${id}`);
+            if (!res.ok) throw new Error("Falha ao abrir a conversa.");
+            const chat = await res.json();
+
+            currentChatId = chat._id;
+            if (chatHeaderTitle) chatHeaderTitle.innerText = titulo || chat.title;
+
+            msgArea.innerHTML = '';
+
+            // Renderiza todo o histórico de mensagens
+            chat.messages.forEach(m => {
+                if (m.sender === 'user') {
+                    const safeMsg = m.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    msgArea.insertAdjacentHTML('beforeend', `
+                    <article class="message user-message" style="margin-top: 20px;">
+                        <div class="message-content"> 
+                            <p style="white-space: pre-wrap;">${safeMsg}</p> 
+                        </div>
+                    </article>`);
+                } else {
+                    const rawHTML = marked.parse(m.text || "");
+                    const cleanHTML = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(rawHTML) : rawHTML;
+                    msgArea.insertAdjacentHTML('beforeend', `
+                    <article class="message ai-message">
+                        <div class="avatar-ai"><i class="fas fa-robot"></i></div>
+                        <div class="message-content">${cleanHTML}</div>
+                    </article>`);
+                }
+            });
+
+            // Aplica realce nos blocos de código recuperados
+            if (typeof hljs !== 'undefined') {
+                document.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                    adicionarBotaoCopiar(block);
+                });
+            }
+
+            carregarHistoricoSidebar();
+            msgArea.scrollTop = msgArea.scrollHeight;
+
+        } catch (err) {
+            alert("Não foi possível carregar a conversa: " + err.message);
+        }
+    }
+
+    async function excluirConversa(id) {
+        if (!confirm("Tem certeza de que deseja apagar esta conversa do MongoDB Atlas?")) return;
+        try {
+            const res = await fetch(`${BASE_API}/chats/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                if (currentChatId === id) {
+                    iniciarNovoChat();
+                } else {
+                    carregarHistoricoSidebar();
+                }
+            }
+        } catch (err) {
+            alert("Erro ao excluir conversa: " + err.message);
+        }
+    }
+
+    function iniciarNovoChat() {
+        currentChatId = null;
+        if (chatHeaderTitle) chatHeaderTitle.innerText = "Assistente Técnico Inteligente";
+        msgArea.innerHTML = `
+        <article class="message ai-message">
+            <div class="avatar-ai" aria-hidden="true"><i class="fas fa-robot"></i></div>
+            <div class="message-content">
+                <p>Nova conversa iniciada! Todas as mensagens serão salvas automaticamente na nuvem no <strong>MongoDB Atlas</strong>.</p>
+            </div>
+        </article>`;
+        carregarHistoricoSidebar();
+        if (chatTextArea) chatTextArea.focus();
+    }
 });
 
-// Adiciona botão "Copiar" no cabeçalho de cada bloco de código
+// Adiciona botão "Copiar" nos blocos de código
 function adicionarBotaoCopiar(codeBlock) {
     const pre = codeBlock.parentElement;
     if (pre && !pre.querySelector('.copy-code-btn')) {
@@ -258,7 +394,7 @@ function adicionarBotaoCopiar(codeBlock) {
     }
 }
 
-// Renderização do Perfil na Sidebar
+// Renderiza perfil na Sidebar
 function renderizarPerfilLateral(isLoggedIn) {
     const wrapper = document.getElementById('sidebar-auth-wrapper');
     if (!wrapper) return;

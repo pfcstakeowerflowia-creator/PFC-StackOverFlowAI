@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     carregarPosts(filtroAtual);
 });
 
-// Função para buscar e renderizar postagens com suporte a filtros
+// Função para buscar e renderizar postagens
 async function carregarPosts(filtro = 'recentes') {
     const feedContainer = document.getElementById('forum-feed-container');
     if (!feedContainer) return;
@@ -68,7 +68,6 @@ async function carregarPosts(filtro = 'recentes') {
         
         let posts = await response.json();
 
-        // Aplica o filtro no cliente
         if (filtro === 'resolvidos') {
             posts = posts.filter(item => item.statusResolvido === true);
         } else if (filtro === 'relevantes') {
@@ -90,14 +89,14 @@ async function carregarPosts(filtro = 'recentes') {
 
         posts.forEach((item) => {
             const statusBadge = item.statusResolvido 
-                ? `<span class="best-answer-badge"><i class="fas fa-check-circle"></i> Resolvido por IA/Comunidade</span>` 
+                ? `<span class="best-answer-badge"><i class="fas fa-check-circle"></i> Resolvido</span>` 
                 : ``;
 
             const tagsArray = Array.isArray(item.tags) ? item.tags : ["RAG", "Geral"];
             const formataTags = tagsArray.map(t => `<span class="tag"># ${escaparHTML(t)}</span>`).join('');
 
             feedContainer.innerHTML += `
-            <div class="question-card ${item.statusResolvido ? 'solved' : ''}">
+            <div class="question-card ${item.statusResolvido ? 'solved' : ''}" id="card-${item._id}">
                 <div class="stats">
                     <div class="stat-item">
                         <span class="votes" id="vote-${item._id}">${item.votos || 0}</span> 
@@ -105,7 +104,13 @@ async function carregarPosts(filtro = 'recentes') {
                     </div>
                 </div>
                 <div class="question-content">
-                    <h3>${escaparHTML(item.titulo)}</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                        <h3>${escaparHTML(item.titulo)}</h3>
+                        <!-- Botão de Excluir Pergunta -->
+                        <button class="btn-delete-post" onclick="window.excluirPost('${item._id}')" title="Excluir pergunta do fórum">
+                            <i class="fas fa-trash-alt"></i> Excluir
+                        </button>
+                    </div>
                     <p>${escaparHTML(item.desc)}</p>
                     <div class="question-footer">
                         <div class="tags">${formataTags}</div>
@@ -129,6 +134,38 @@ async function carregarPosts(filtro = 'recentes') {
         `;
     }
 }
+
+// 🗑️ FUNÇÃO PARA EXCLUIR POSTAGEM NO MONGODB ATLAS
+window.excluirPost = async function(id) {
+    if (!confirm("Tem certeza de que deseja apagar esta pergunta do fórum e da base RAG?")) {
+        return;
+    }
+
+    try {
+        const URL_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
+            ? `http://localhost:3000/api/posts/${id}`
+            : `https://pfc-stackoverflowai.onrender.com/api/posts/${id}`;
+
+        const res = await fetch(URL_API, { method: 'DELETE' });
+
+        if (res.ok) {
+            // Efeito suave de remoção visual imediata
+            const card = document.getElementById(`card-${id}`);
+            if (card) {
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.95)';
+                card.style.transition = 'all 0.3s ease';
+                setTimeout(() => card.remove(), 300);
+            }
+        } else {
+            const err = await res.json().catch(() => ({}));
+            alert("❌ Falha ao excluir: " + (err.error || "Erro desconhecido."));
+        }
+    } catch (error) {
+        console.error("Erro ao excluir post:", error);
+        alert("❌ Erro de conexão ao tentar excluir a pergunta.");
+    }
+};
 
 // Computa voto positivo no MongoDB via PATCH
 window.votar = async function(id, btnElement) {
@@ -158,7 +195,6 @@ window.votar = async function(id, btnElement) {
     }
 };
 
-// Sanitizador simples para evitar injeção indevida no DOM
 function escaparHTML(str) {
     if (!str) return '';
     return String(str)
@@ -169,16 +205,16 @@ function escaparHTML(str) {
         .replace(/'/g, '&#039;');
 }
 
-// Renderiza o perfil lateral
 function renderizarPerfilLateral(isLoggedIn) {
     const wrapper = document.getElementById('sidebar-auth-wrapper');
     if (!wrapper) return;
     if (isLoggedIn) {
+        const nomeUsuario = localStorage.getItem('userName') || "Aluno PFC Logado";
         wrapper.innerHTML = `
         <div class="user-profile">
             <div class="avatar"><i class="fas fa-user"></i></div>
             <div class="user-info">
-                <span class="user-name">Aluno PFC Logado</span>
+                <span class="user-name">${escaparHTML(nomeUsuario)}</span>
                 <span class="user-role">Autenticado Local DB</span>
             </div>
             <i class="fas fa-sign-out-alt config-btn text-danger" onclick="window.logout()" style="cursor:pointer; font-size:16px;" title="Desconectar"></i>
@@ -191,8 +227,8 @@ function renderizarPerfilLateral(isLoggedIn) {
     }
 }
 
-// Logout de Sessão
 window.logout = function() {
     localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('userName');
     window.location.reload();
 };

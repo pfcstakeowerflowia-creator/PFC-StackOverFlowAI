@@ -502,3 +502,33 @@ body.high-contrast .ai-feature-box {
     background-color: #000000 !important;
     border: 2px solid #ffff00 !important;
 }
+
+/* Botão de Excluir Pergunta no Card */
+.btn-delete-post {
+    background: rgba(244, 63, 94, 0.08);
+    color: #f43f5e;
+    border: 1px solid rgba(244, 63, 94, 0.25);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.btn-delete-post:hover {
+    background: #f43f5e;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(244, 63, 94, 0.35);
+}
+
+/* Suporte ao Alto Contraste para o botão de exclusão */
+body.high-contrast .btn-delete-post {
+    background: #000000 !important;
+    color: #ff0000 !important;
+    border: 1px solid #ff0000 !important;
+}

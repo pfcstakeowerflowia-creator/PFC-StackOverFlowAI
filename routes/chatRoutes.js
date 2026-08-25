@@ -4,35 +4,23 @@ const chatController = require('../controllers/chatController');
 const Post = require('../models/Post');
 
 // =================================================================
-// 1. ROTAS DO CHAT INTELIGENTE E HISTÓRICO NO MONGODB ATLAS
+// 1. ROTAS DO CHAT E HISTÓRICO MONGODB
 // =================================================================
-
-// Enviar mensagem, consultar RAG e salvar no histórico
 router.post('/chat', chatController.enviarMensagem);
-
-// Listar todas as conversas salvas (para a barra lateral)
 router.get('/chats', chatController.listarConversas);
-
-// Obter histórico de mensagens de uma conversa específica
 router.get('/chats/:id', chatController.obterConversaPorId);
-
-// Excluir uma conversa do banco de dados
 router.delete('/chats/:id', chatController.excluirConversa);
 
-
 // =================================================================
-// 2. ROTAS DO FÓRUM COMUNITÁRIO (BASE DE CONHECIMENTO RAG)
+// 2. ROTAS DO FÓRUM (RAG BASE)
 // =================================================================
 
-// Listar dúvidas do fórum com suporte a filtros e ordenação
+// Listar dúvidas com filtros
 router.get('/posts', async (req, res) => {
     try {
         const { filtro } = req.query;
         let query = {};
-
-        if (filtro === 'resolvido') {
-            query.statusResolvido = true;
-        }
+        if (filtro === 'resolvido') query.statusResolvido = true;
 
         const posts = await Post.find(query).sort({ createdAt: -1 });
         return res.json(posts);
@@ -42,11 +30,10 @@ router.get('/posts', async (req, res) => {
     }
 });
 
-// Publicar uma nova dúvida no fórum
+// Publicar nova dúvida
 router.post('/posts', async (req, res) => {
     try {
         const { titulo, desc, tags, author } = req.body;
-
         if (!titulo || !desc) {
             return res.status(400).json({ error: "Título e descrição são campos obrigatórios." });
         }
@@ -64,11 +51,11 @@ router.post('/posts', async (req, res) => {
         return res.status(201).json(novoPost);
     } catch (error) {
         console.error("Erro ao criar postagem:", error.message);
-        return res.status(500).json({ error: "Falha ao salvar a dúvida no banco de dados." });
+        return res.status(500).json({ error: "Falha ao salvar no banco de dados." });
     }
 });
 
-// Votação atômica em um post (PATCH com $inc)
+// Votar em post (PATCH atômico)
 router.patch('/posts/:id/vote', async (req, res) => {
     try {
         const postAtualizado = await Post.findByIdAndUpdate(
@@ -76,15 +63,24 @@ router.patch('/posts/:id/vote', async (req, res) => {
             { $inc: { votos: 1 } },
             { new: true }
         );
-
-        if (!postAtualizado) {
-            return res.status(404).json({ error: "Postagem não encontrada." });
-        }
-
+        if (!postAtualizado) return res.status(404).json({ error: "Postagem não encontrada." });
         return res.json(postAtualizado);
     } catch (error) {
-        console.error("Erro ao computar voto:", error.message);
         return res.status(500).json({ error: "Não foi possível computar o voto." });
+    }
+});
+
+// 🗑️ EXCLUIR POSTAGEM DO FÓRUM (NOVA ROTA)
+router.delete('/posts/:id', async (req, res) => {
+    try {
+        const postExcluido = await Post.findByIdAndDelete(req.params.id);
+        if (!postExcluido) {
+            return res.status(404).json({ error: "Postagem não encontrada para exclusão." });
+        }
+        return res.json({ success: true, message: "Postagem excluída com sucesso do fórum e da base RAG." });
+    } catch (error) {
+        console.error("Erro ao excluir postagem:", error.message);
+        return res.status(500).json({ error: "Erro ao excluir postagem do banco de dados." });
     }
 });
 

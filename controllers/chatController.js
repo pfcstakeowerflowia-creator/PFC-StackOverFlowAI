@@ -1,6 +1,7 @@
+
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const Post = require("../models/Post");
-const Chat = require("../models/Chat");
+const Chat = require("../models/chat"); // <-- Mude para 'chat' minúsculo
 
 // 1. Enviar Mensagem, Consultar RAG e Salvar Interação no MongoDB
 exports.enviarMensagem = async (req, res) => {

@@ -183,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const loadingId = 'loading-' + Date.now();
             msgArea.insertAdjacentHTML('beforeend', `
             <article class="message ai-message" id="${loadingId}">
-                <div class="avatar-ai" aria-hidden="true"><i class="fas fa-robot"></i></div>
+                <div class="avatar-ai"><i class="fas fa-robot"></i></div>
                 <div class="message-content">
                     <p style="color: var(--text-secondary);"><i class="fas fa-circle-notch fa-spin"></i> Consultando base do Fórum (RAG) e salvando no MongoDB...</p>
                 </div>
@@ -418,18 +418,27 @@ function adicionarBotaoCopiar(codeBlock) {
     }
 }
 
-// Renderiza perfil na Sidebar
+// Renderiza o perfil na Sidebar com suporte a Aluno e Administrador
 function renderizarPerfilLateral(isLoggedIn) {
     const wrapper = document.getElementById('sidebar-auth-wrapper');
     if (!wrapper) return;
+
     if (isLoggedIn) {
-        const nomeUsuario = localStorage.getItem('userName') || "Aluno PFC Logado";
+        const nomeUsuario = localStorage.getItem('userName') || "Aluno PFC";
+        const role = localStorage.getItem('userRole') || "aluno";
+        
+        const badgeRole = role === 'admin' 
+            ? '<span style="color: #00d2d3; font-size: 11px; font-weight: 600;"><i class="fas fa-shield-alt"></i> Administrador</span>' 
+            : '<span style="color: var(--text-secondary); font-size: 11px;"><i class="fas fa-user-graduate"></i> Aluno PFC</span>';
+
         wrapper.innerHTML = `
         <div class="user-profile">
-            <div class="avatar"><i class="fas fa-user"></i></div>
+            <div class="avatar" style="${role === 'admin' ? 'border: 1px solid #00d2d3;' : ''}">
+                <i class="fas fa-${role === 'admin' ? 'user-shield' : 'user'}" style="${role === 'admin' ? 'color: #00d2d3;' : ''}"></i>
+            </div>
             <div class="user-info">
-                <span class="user-name">${nomeUsuario}</span>
-                <span class="user-role">Autenticado Local DB</span>
+                <span class="user-name">${escaparHTML(nomeUsuario)}</span>
+                <span class="user-role">${badgeRole}</span>
             </div>
             <button class="icon-btn text-danger" onclick="window.logout()" style="background:none; border:none; cursor:pointer;" title="Desconectar"><i class="fas fa-sign-out-alt"></i></button>
         </div>`;
@@ -441,9 +450,22 @@ function renderizarPerfilLateral(isLoggedIn) {
     }
 }
 
-// Logout de Sessão
+function escaparHTML(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+// Logout Completo de Sessão
 window.logout = function() {
     localStorage.removeItem('isLoggedIn'); 
-    localStorage.removeItem('userName');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userName'); 
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userRole');
     window.location.reload(); 
 };

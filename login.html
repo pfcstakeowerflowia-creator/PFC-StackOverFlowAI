@@ -3,65 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Overflowia.AI</title>
+    <title>Acesso e Cadastro - Overflowia.AI</title>
     <link rel="stylesheet" href="style.css"> 
     <link rel="stylesheet" href="login.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="login-body">
-    <!-- Efeito de Luz Fundo (Ambient Glow) -->
     <div class="ambient-glow" aria-hidden="true"></div>
     
     <div class="login-wrapper">
         <main class="login-box" role="main">
             
-            <!-- Logotipo e Título -->
             <div class="login-brand">
                 <div class="brand-icon-lg" aria-hidden="true"><i class="fas fa-brain"></i></div>
-                <h2>Acesse sua Conta</h2>
+                <h2>Overflowia.AI</h2>
             </div>
 
-            <div class="login-header">
-                <h3>Bem-vindo ao Overflowia.AI</h3>
-                <p style="font-size: 13px; color: var(--text-secondary); margin-top: 5px;">Entre com seus dados para interagir no fórum e no chat RAG</p>
-            </div>
-
-            <!-- Formulário de Autenticação -->
-            <form class="login-form" aria-label="Formulário de Acesso">
-                
-                <!-- Campo de E-mail -->
-                <div class="input-group">
-                    <label for="email">E-mail Institucional</label>
-                    <div class="input-wrapper">
-                        <i class="far fa-envelope" aria-hidden="true"></i>
-                        <input type="email" id="email" placeholder="aluno@instituicao.edu.br" autocomplete="email" required>
-                    </div>
-                </div>
-
-                <!-- Campo de Senha -->
-                <div class="input-group">
-                    <div class="label-row" style="display: flex; justify-content: space-between; align-items: center;">
-                        <label for="password">Senha</label>
-                        <a href="#" onclick="alert('Dica do PFC: Utilize qualquer e-mail e senha para autenticação de teste.'); return false;" style="font-size: 12px; color: var(--accent-color); text-decoration: none;">Esqueceu a senha?</a>
-                    </div>
-                    <div class="input-wrapper">
-                        <i class="fas fa-lock" aria-hidden="true"></i>
-                        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" required>
-                    </div>
-                </div>
-
-                <!-- Botão Entrar -->
-                <button type="submit" class="btn-login" id="btn-submit-login" style="margin-top: 10px;"> 
-                    <span>Entrar no Sistema</span> <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            <!-- Abas de Alternância: Entrar vs Criar Conta -->
+            <div class="auth-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                <button type="button" id="tab-login" class="tab-btn active" style="flex: 1; padding: 10px; background: none; border: none; color: var(--accent-color); border-bottom: 2px solid var(--accent-color); font-weight: 600; cursor: pointer;">
+                    Entrar
                 </button>
-                
-                <div style="text-align: center; margin-top: 10px;">
-                    <a href="index.html" style="font-size: 12.5px; color: var(--text-secondary); text-decoration: none; transition: 0.2s;">
-                        <i class="fas fa-arrow-left"></i> Acessar como Visitante
-                    </a>
+                <button type="button" id="tab-register" class="tab-btn" style="flex: 1; padding: 10px; background: none; border: none; color: var(--text-secondary); font-weight: 500; cursor: pointer;">
+                    Criar Conta
+                </button>
+            </div>
+
+            <div id="auth-alert" style="display: none; padding: 10px; border-radius: 8px; font-size: 13px; margin-bottom: 15px; text-align: center;"></div>
+
+            <!-- FORMULÁRIO DE LOGIN -->
+            <form id="form-login" class="login-form">
+                <div class="input-group">
+                    <label for="login-email">E-mail</label>
+                    <div class="input-wrapper">
+                        <i class="far fa-envelope"></i>
+                        <input type="email" id="login-email" placeholder="aluno@instituicao.edu.br" autocomplete="email" required>
+                    </div>
                 </div>
+
+                <div class="input-group">
+                    <label for="login-password">Senha</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login" style="margin-top: 10px;"> 
+                    <span>Entrar no Sistema</span> <i class="fas fa-arrow-right"></i>
+                </button>
             </form>
+
+            <!-- FORMULÁRIO DE CADASTRO (INICIALMENTE OCULTO) -->
+            <form id="form-register" class="login-form" style="display: none;">
+                <div class="input-group">
+                    <label for="reg-name">Nome Completo</label>
+                    <div class="input-wrapper">
+                        <i class="far fa-user"></i>
+                        <input type="text" id="reg-name" placeholder="Seu Nome" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="reg-email">E-mail</label>
+                    <div class="input-wrapper">
+                        <i class="far fa-envelope"></i>
+                        <input type="email" id="reg-email" placeholder="seuemail@exemplo.com" autocomplete="email" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="reg-password">Senha</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres" minlength="6" required>
+                    </div>
+                </div>
+
+                <!-- Tipo de Conta: Aluno ou Administrador -->
+                <div class="input-group">
+                    <label for="reg-role">Tipo de Conta</label>
+                    <select id="reg-role" style="width: 100%; background-color: var(--bg-main); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 8px; font-size: 14px; outline: none;">
+                        <option value="aluno">Aluno (Padrão)</option>
+                        <option value="admin">Administrador (Requer Chave)</option>
+                    </select>
+                </div>
+
+                <!-- Campo do Código Admin (Exibido apenas se Admin for selecionado) -->
+                <div class="input-group" id="group-admin-code" style="display: none;">
+                    <label for="reg-admin-code">Chave de Autorização Admin</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-key"></i>
+                        <input type="password" id="reg-admin-code" placeholder="Código: admin2026">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login" style="margin-top: 10px; background-color: var(--bot-color);"> 
+                    <span>Finalizar Cadastro</span> <i class="fas fa-user-plus"></i>
+                </button>
+            </form>
+
+            <div style="text-align: center; margin-top: 15px;">
+                <a href="index.html" style="font-size: 12.5px; color: var(--text-secondary); text-decoration: none;">
+                    <i class="fas fa-arrow-left"></i> Continuar como Visitante
+                </a>
+            </div>
 
         </main>
     </div>

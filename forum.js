@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     carregarPosts(filtroAtual);
 });
 
-// Função para buscar e renderizar postagens
+// Função para buscar e renderizar postagens do MongoDB
 async function carregarPosts(filtro = 'recentes') {
     const feedContainer = document.getElementById('forum-feed-container');
     if (!feedContainer) return;
@@ -87,6 +87,9 @@ async function carregarPosts(filtro = 'recentes') {
             return;
         }
 
+        const userRole = localStorage.getItem('userRole') || 'aluno';
+        const usuarioLogado = localStorage.getItem('userName') || '';
+
         posts.forEach((item) => {
             const statusBadge = item.statusResolvido 
                 ? `<span class="best-answer-badge"><i class="fas fa-check-circle"></i> Resolvido</span>` 
@@ -94,6 +97,15 @@ async function carregarPosts(filtro = 'recentes') {
 
             const tagsArray = Array.isArray(item.tags) ? item.tags : ["RAG", "Geral"];
             const formataTags = tagsArray.map(t => `<span class="tag"># ${escaparHTML(t)}</span>`).join('');
+
+            // O Administrador pode apagar qualquer dúvida; o Aluno pode apagar suas próprias dúvidas
+            const podeExcluir = (userRole === 'admin') || (usuarioLogado && item.author === usuarioLogado);
+
+            const botaoExcluir = podeExcluir ? `
+                <button class="btn-delete-post" onclick="window.excluirPost('${item._id}')" title="Excluir pergunta do fórum">
+                    <i class="fas fa-trash-alt"></i> Excluir
+                </button>
+            ` : '';
 
             feedContainer.innerHTML += `
             <div class="question-card ${item.statusResolvido ? 'solved' : ''}" id="card-${item._id}">
@@ -106,10 +118,7 @@ async function carregarPosts(filtro = 'recentes') {
                 <div class="question-content">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
                         <h3>${escaparHTML(item.titulo)}</h3>
-                        <!-- Botão de Excluir Pergunta -->
-                        <button class="btn-delete-post" onclick="window.excluirPost('${item._id}')" title="Excluir pergunta do fórum">
-                            <i class="fas fa-trash-alt"></i> Excluir
-                        </button>
+                        ${botaoExcluir}
                     </div>
                     <p>${escaparHTML(item.desc)}</p>
                     <div class="question-footer">
@@ -135,7 +144,7 @@ async function carregarPosts(filtro = 'recentes') {
     }
 }
 
-// 🗑️ FUNÇÃO PARA EXCLUIR POSTAGEM NO MONGODB ATLAS
+// 🗑️ Excluir Postagem no MongoDB Atlas
 window.excluirPost = async function(id) {
     if (!confirm("Tem certeza de que deseja apagar esta pergunta do fórum e da base RAG?")) {
         return;
@@ -149,7 +158,6 @@ window.excluirPost = async function(id) {
         const res = await fetch(URL_API, { method: 'DELETE' });
 
         if (res.ok) {
-            // Efeito suave de remoção visual imediata
             const card = document.getElementById(`card-${id}`);
             if (card) {
                 card.style.opacity = '0';
@@ -205,19 +213,29 @@ function escaparHTML(str) {
         .replace(/'/g, '&#039;');
 }
 
+// Renderiza Perfil na Sidebar com suporte a Aluno e Administrador
 function renderizarPerfilLateral(isLoggedIn) {
     const wrapper = document.getElementById('sidebar-auth-wrapper');
     if (!wrapper) return;
+
     if (isLoggedIn) {
-        const nomeUsuario = localStorage.getItem('userName') || "Aluno PFC Logado";
+        const nomeUsuario = localStorage.getItem('userName') || "Aluno PFC";
+        const role = localStorage.getItem('userRole') || "aluno";
+        
+        const badgeRole = role === 'admin' 
+            ? '<span style="color: #00d2d3; font-size: 11px; font-weight: 600;"><i class="fas fa-shield-alt"></i> Administrador</span>' 
+            : '<span style="color: var(--text-secondary); font-size: 11px;"><i class="fas fa-user-graduate"></i> Aluno PFC</span>';
+
         wrapper.innerHTML = `
         <div class="user-profile">
-            <div class="avatar"><i class="fas fa-user"></i></div>
+            <div class="avatar" style="${role === 'admin' ? 'border: 1px solid #00d2d3;' : ''}">
+                <i class="fas fa-${role === 'admin' ? 'user-shield' : 'user'}" style="${role === 'admin' ? 'color: #00d2d3;' : ''}"></i>
+            </div>
             <div class="user-info">
                 <span class="user-name">${escaparHTML(nomeUsuario)}</span>
-                <span class="user-role">Autenticado Local DB</span>
+                <span class="user-role">${badgeRole}</span>
             </div>
-            <i class="fas fa-sign-out-alt config-btn text-danger" onclick="window.logout()" style="cursor:pointer; font-size:16px;" title="Desconectar"></i>
+            <button class="icon-btn text-danger" onclick="window.logout()" style="background:none; border:none; cursor:pointer;" title="Desconectar"><i class="fas fa-sign-out-alt"></i></button>
         </div>`;
     } else {
         wrapper.innerHTML = `
@@ -227,8 +245,12 @@ function renderizarPerfilLateral(isLoggedIn) {
     }
 }
 
+// Logout Completo de Sessão
 window.logout = function() {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('userName');
-    window.location.reload();
+    localStorage.removeItem('isLoggedIn'); 
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userName'); 
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userRole');
+    window.location.reload(); 
 };

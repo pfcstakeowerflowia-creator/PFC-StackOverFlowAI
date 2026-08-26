@@ -2,92 +2,203 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fórum Dinâmico - Overflowia (Acessível)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Fórum Dinâmico - Overflowia.AI (Humano + IA)</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="forum.css">
+    
+    <!-- Bibliotecas de Renderização Markdown, Segurança e Destaque de Código -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <!-- Fontes e Ícones -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <!-- LINK DE SALTO: Essencial para cegos pularem o menu lateral e irem direto para as perguntas -->
-  
+    <!-- LINK DE SALTO (Acessibilidade WCAG AAA) -->
+    <a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
 
     <div class="app-layout">
         
-        <!-- SIDEBAR: Role navigation para acessibilidade -->
+        <!-- Sombra de Fundo para o Menu Mobile (Overlay) -->
+        <div id="sidebar-overlay" class="sidebar-overlay" aria-hidden="true"></div>
+
+        <!-- SIDEBAR DE NAVEGAÇÃO / DRAWER RESPONSIVO -->
         <aside class="side-panel" role="navigation" aria-label="Menu Lateral">
             <div class="brand">
-                <div class="brand-icon" aria-hidden="true"><i class="fas fa-brain"></i></div>
-                <h2>Overflowia.AI</h2>
+                <div class="brand-wrapper">
+                    <div class="brand-icon" aria-hidden="true"><i class="fas fa-brain"></i></div>
+                    <h2>Overflowia.AI</h2>
+                </div>
+                <button id="btn-close-sidebar" class="btn-close-sidebar" aria-label="Fechar menu lateral">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
             </div>
 
-            <!-- FERRAMENTAS DE ACESSIBILIDADE: BOTÃO DE CONTRASTE -->
+            <!-- Ferramenta de Acessibilidade: Alto Contraste -->
             <div class="accessibility-tools" style="margin-bottom: 20px; padding: 10px; border-bottom: 1px solid var(--border-color);">
-                <button id="toggle-contrast" class="nav-btn secondary-btn" style="width: 100%;" aria-label="Ativar Alto Contraste">
+                <button id="toggle-contrast" class="nav-btn secondary-btn" style="width: 100%; justify-content: center;" aria-label="Ativar Alto Contraste">
                     <i class="fas fa-adjust" aria-hidden="true"></i> Alto Contraste
                 </button>
             </div>
             
-            <nav class="nav-buttons">
+            <nav class="nav-buttons" aria-label="Navegação do fórum">
                 <a href="index.html" class="nav-btn secondary-btn"><i class="fas fa-robot" aria-hidden="true"></i> Chat com IA</a>
                 <button class="nav-btn primary-btn" aria-current="page"><i class="fas fa-users" aria-hidden="true"></i> Fórum de Postagem</button>
                 <a href="sobre.html" class="nav-btn secondary-btn"><i class="fas fa-info-circle" aria-hidden="true"></i> Sobre o Projeto</a>
             </nav>
 
-            <!-- Area Injetada RAG Base Lateral -->
+            <!-- Injeção do Perfil Autenticado no MongoDB -->
             <div id="sidebar-auth-wrapper"></div>
         </aside>
 
+        <!-- CONTEÚDO PRINCIPAL DO FÓRUM -->
         <main class="chat-container" id="main-content" role="main">
             
             <header class="forum-header">
-                <div>
-                    <h1>Todas as Perguntas da Base Local</h1>
-                    <p class="subtitle">Alimentando comunidade e Database Interno de AI</p>
+                <div class="header-left" style="display: flex; align-items: center; gap: 15px;">
+                    <button id="btn-open-sidebar" class="mobile-menu-btn" aria-label="Abrir menu lateral">
+                        <i class="fas fa-bars" aria-hidden="true"></i>
+                    </button>
+                    <div>
+                        <h1>Fórum de Dúvidas e Soluções</h1>
+                        <p class="subtitle">Comunidade técnica integrada com Inteligência Artificial (Human-in-the-Loop)</p>
+                    </div>
                 </div>
-                <!-- Botão de Ação -->
-                <a href="ask.html" id="ask-button" class="ask-btn" aria-label="Submeter nova pergunta ao fórum">Submeter Nova Pergunta RAG</a>
+                <!-- Botão de Nova Dúvida -->
+                <a href="ask.html" id="ask-button" class="ask-btn" aria-label="Submeter nova pergunta ao fórum">
+                    <i class="fas fa-plus-circle" aria-hidden="true"></i> Nova Pergunta RAG
+                </a>
             </header>
 
-            <!-- Filtros com Roles de Botão para leitores de tela -->
+            <!-- Filtros de Exibição -->
             <nav class="forum-filters" aria-label="Filtros do fórum">
-                <button class="active" aria-pressed="true">Mais recentes DB</button>
-                <button aria-pressed="false">Relevantes Comunidade</button>
-                <button aria-pressed="false"><i class="fas fa-check-circle text-green" aria-hidden="true"></i> Sucesso de IA RAG Resolvida</button>
+                <button class="active" aria-pressed="true">Mais recentes</button>
+                <button aria-pressed="false">Mais Votadas</button>
+                <button aria-pressed="false"><i class="fas fa-check-circle text-green" aria-hidden="true"></i> Resolvidas</button>
             </nav>
 
-            <!-- ARIA-LIVE: Avisa ao leitor de tela quando novas perguntas forem carregadas via JS -->
+            <!-- Feed Dinâmico de Perguntas -->
             <div class="forum-feed" id="forum-feed-container" aria-live="polite" role="region" aria-label="Lista de perguntas">
-                <!-- Recebe Render Mapped Dinamico Via DOM/JS  -->
+                <!-- Renderizado dinamicamente via forum.js -->
             </div>
 
             <!-- Rodapé de Compromisso ODS -->
-            <footer style="padding: 20px; text-align: center; font-size: 11px; color: var(--text-secondary);">
-                Overflowia.AI - Inclusão Digital e Educação de Qualidade (ODS 4 e 10).
+            <footer style="padding: 15px; text-align: center; font-size: 11px; color: var(--text-secondary);">
+                Overflowia.AI — Inclusão Digital e Educação de Qualidade (Compromisso ODS 4 e 10 da ONU).
             </footer>
             
         </main>
     </div>
 
-    <!-- Script Original do Fórum -->
+    <!-- ================================================================= -->
+    <!-- MODAL DE DISCUSSÃO / THREAD DE RESPOSTAS (HUMANO + IA)             -->
+    <!-- ================================================================= -->
+    <div id="thread-modal" class="thread-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modal-thread-title">
+        <div class="thread-modal-backdrop" id="modal-backdrop"></div>
+        
+        <div class="thread-modal-content">
+            <header class="thread-modal-header">
+                <div class="modal-title-wrap">
+                    <span id="modal-thread-status" class="best-answer-badge" style="display: none;">
+                        <i class="fas fa-check-circle"></i> Resolvido
+                    </span>
+                    <h2 id="modal-thread-title">Título da Dúvida</h2>
+                </div>
+                <button id="btn-close-modal" class="modal-close-btn" aria-label="Fechar discussão">
+                    <i class="fas fa-times"></i>
+                </button>
+            </header>
+
+            <div class="thread-modal-body">
+                
+                <!-- Caixa da Pergunta Original -->
+                <div class="thread-original-question">
+                    <div class="thread-author-bar">
+                        <div class="author-info" id="modal-thread-author">
+                            <i class="fas fa-user-circle"></i> Autor
+                        </div>
+                        <div class="tags" id="modal-thread-tags"></div>
+                    </div>
+                    <div id="modal-thread-desc" class="thread-desc-content"></div>
+                </div>
+
+                <!-- SEÇÃO 1: RESPOSTA DA INTELIGÊNCIA ARTIFICIAL -->
+                <div class="thread-section ai-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-robot text-bot-icon"></i> Resposta Oficial da Inteligência Artificial</h3>
+                        <button id="btn-generate-ai-answer" class="btn-ia-generate">
+                            <i class="fas fa-magic"></i> <span id="btn-ia-text">Gerar Resposta com IA</span>
+                        </button>
+                    </div>
+                    <div id="modal-ai-answer-container" class="answer-box-ai">
+                        <p class="empty-ai-msg">
+                            <i class="fas fa-info-circle"></i> A IA ainda não respondeu a esta dúvida. Clique no botão acima para gerar a solução técnica com Gemini.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 2: RESPOSTAS DA COMUNIDADE (HUMANOS) -->
+                <div class="thread-section community-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-users"></i> Respostas da Comunidade (<span id="modal-answers-count">0</span>)</h3>
+                    </div>
+                    <div id="modal-community-answers-list" class="community-answers-list">
+                        <!-- Respostas inseridas dinamicamente via JS -->
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 3: FORMULÁRIO PARA ENVIAR RESPOSTA HUMANA -->
+                <form id="form-human-answer" class="form-add-answer">
+                    <h4><i class="fas fa-reply"></i> Enviar sua Resposta</h4>
+                    <div class="editor-wrapper">
+                        <textarea id="human-answer-text" class="editor-textarea" placeholder="Escreva sua explicação e solução (suporta Markdown e código)..." required></textarea>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                        <button type="submit" class="submit-btn" id="btn-submit-human-answer">
+                            <i class="fas fa-paper-plane"></i> Publicar Resposta
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Principal do Fórum -->
     <script src="forum.js"></script>
 
-    <!-- Script de Integração de Acessibilidade (Contraste) -->
+    <!-- Scripts de Acessibilidade e Menu Mobile -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const btnContrast = document.getElementById('toggle-contrast');
-            
-            // Mantém o estado do contraste entre as páginas
             if (localStorage.getItem('highContrast') === 'true') {
                 document.body.classList.add('high-contrast');
             }
-
             if (btnContrast) {
                 btnContrast.addEventListener('click', () => {
                     const isEnabled = document.body.classList.toggle('high-contrast');
                     localStorage.setItem('highContrast', isEnabled);
                 });
             }
+
+            // Menu Mobile
+            const openBtn = document.getElementById('btn-open-sidebar');
+            const closeBtn = document.getElementById('btn-close-sidebar');
+            const sidebar = document.querySelector('.side-panel');
+            const overlay = document.getElementById('sidebar-overlay');
+
+            function toggleSidebar(open) {
+                if (sidebar) sidebar.classList.toggle('open', open);
+                if (overlay) overlay.classList.toggle('active', open);
+            }
+
+            if (openBtn) openBtn.addEventListener('click', () => toggleSidebar(true));
+            if (closeBtn) closeBtn.addEventListener('click', () => toggleSidebar(false));
+            if (overlay) overlay.addEventListener('click', () => toggleSidebar(false));
         });
     </script>
 </body>

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const chatController = require('../controllers/chatController');
 const Post = require('../models/Post');
 const User = require('../models/User');
@@ -18,13 +19,11 @@ router.post('/auth/register', async (req, res) => {
             return res.status(400).json({ error: "Preencha todos os campos obrigatórios." });
         }
 
-        // Verifica se o e-mail já existe no banco
         const usuarioExistente = await User.findOne({ email: email.toLowerCase().trim() });
         if (usuarioExistente) {
             return res.status(400).json({ error: "Este e-mail já está cadastrado no sistema." });
         }
 
-        // Se solicitou conta Admin, valida o código mestre (padrão PFC: 2026)
         let roleFinal = 'aluno';
         if (role === 'admin') {
             if (adminCode === 'admin2026' || adminCode === 'ifpr2026') {
@@ -34,7 +33,6 @@ router.post('/auth/register', async (req, res) => {
             }
         }
 
-        // Criptografia da senha
         const salt = await bcrypt.genSalt(10);
         const senhaHash = await bcrypt.hash(senha, salt);
 
@@ -60,7 +58,7 @@ router.post('/auth/register', async (req, res) => {
 
     } catch (error) {
         console.error("Erro no cadastro:", error.message);
-        return res.status(500).json({ error: "Erro interno ao cadastrar usuário no banco de dados." });
+        return res.status(500).json({ error: "Erro ao cadastrar usuário no banco de dados." });
     }
 });
 
@@ -73,13 +71,11 @@ router.post('/auth/login', async (req, res) => {
             return res.status(400).json({ error: "Informe e-mail e senha para entrar." });
         }
 
-        // Busca o usuário no MongoDB
         const usuario = await User.findOne({ email: email.toLowerCase().trim() });
         if (!usuario) {
-            return res.status(404).json({ error: "Usuário não encontrado. Verifique o e-mail digitado." });
+            return res.status(404).json({ error: "Usuário não encontrado. Verifique o e-mail." });
         }
 
-        // Valida a senha criptografada
         const senhaCorreta = await bcrypt.compare(senha, usuario.senha);
         if (!senhaCorreta) {
             return res.status(401).json({ error: "Senha incorreta. Tente novamente." });
@@ -98,7 +94,7 @@ router.post('/auth/login', async (req, res) => {
 
     } catch (error) {
         console.error("Erro no login:", error.message);
-        return res.status(500).json({ error: "Erro interno no servidor ao autenticar." });
+        return res.status(500).json({ error: "Erro interno ao autenticar." });
     }
 });
 
@@ -113,8 +109,10 @@ router.delete('/chats/:id', chatController.excluirConversa);
 
 
 // =================================================================
-// 3. ROTAS DO FÓRUM (RAG BASE)
+// 3. ROTAS DO FÓRUM (RAG BASE & SISTEMA HÍBRIDO DE RESPOSTAS)
 // =================================================================
+
+// Listar dúvidas com filtros
 router.get('/posts', async (req, res) => {
     try {
         const { filtro } = req.query;
@@ -128,6 +126,18 @@ router.get('/posts', async (req, res) => {
     }
 });
 
+// Obter uma dúvida específica com todas as respostas
+router.get('/posts/:id', async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ error: "Pergunta não encontrada." });
+        return res.json(post);
+    } catch (error) {
+        return res.status(500).json({ error: "Erro ao carregar detalhes da dúvida." });
+    }
+});
+
+// Publicar nova dúvida
 router.post('/posts', async (req, res) => {
     try {
         const { titulo, desc, tags, author } = req.body;
@@ -141,16 +151,19 @@ router.post('/posts', async (req, res) => {
             tags: Array.isArray(tags) ? tags : ["RAG", "Geral"],
             author: author || "Aluno PFC Logado",
             votos: 0,
-            statusResolvido: false
+            statusResolvido: false,
+            respostas: []
         });
 
         await novoPost.save();
         return res.status(201).json(novoPost);
     } catch (error) {
-        return res.status(500).json({ error: "Falha ao salvar postagem." });
+        console.error("Erro ao criar postagem:", error.message);
+        return res.status(500).json({ error: "Falha ao salvar postagem no banco." });
     }
 });
 
+// Votar em post (PATCH atômico)
 router.patch('/posts/:id/vote', async (req, res) => {
     try {
         const postAtualizado = await Post.findByIdAndUpdate(
@@ -165,15 +178,179 @@ router.patch('/posts/:id/vote', async (req, res) => {
     }
 });
 
+// Excluir postagem do fórum
 router.delete('/posts/:id', async (req, res) => {
     try {
         const postExcluido = await Post.findByIdAndDelete(req.params.id);
         if (!postExcluido) {
-            return res.status(404).json({ error: "Postagem não encontrada no banco." });
+            return res.status(404).json({ error: "Postagem não encontrada." });
         }
         return res.json({ success: true, message: "Postagem excluída com sucesso." });
     } catch (error) {
         return res.status(500).json({ error: "Erro ao excluir postagem." });
+    }
+});
+
+// ✍️ 1. ADICIONAR RESPOSTA HUMANA (Comunidade / Alunos / Admins)
+router.post('/posts/:id/respostas', async (req, res) => {
+    try {
+        const { texto, autor, role } = req.body;
+
+        if (!texto || !texto.trim()) {
+            return res.status(400).json({ error: "O conteúdo da resposta não pode ficar em branco." });
+        }
+
+        const post = await Post.findById(req.params.id);
+        if (!post) {
+            return res.status(404).json({ error: "Pergunta não encontrada para responder." });
+        }
+
+        const novaResposta = {
+            tipo: 'humano',
+            autor: autor || "Aluno PFC Logado",
+            role: role || "aluno",
+            texto: texto.trim(),
+            votos: 0,
+            isMelhorResposta: false,
+            createdAt: new Date()
+        };
+
+        post.respostas.push(novaResposta);
+        await post.save();
+
+        return res.status(201).json({
+            success: true,
+            resposta: post.respostas[post.respostas.length - 1],
+            post: post
+        });
+    } catch (error) {
+        console.error("Erro ao publicar resposta humana:", error);
+        return res.status(500).json({ error: "Erro ao salvar a resposta no banco." });
+    }
+});
+
+// 🤖 2. GERAR RESPOSTA AUTOMÁTICA DA IA (Google Gemini)
+router.post('/posts/:id/gerar-resposta-ia', async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) {
+            return res.status(404).json({ error: "Pergunta não encontrada." });
+        }
+
+        // Se a IA já respondeu esta pergunta, retorna a resposta já salva
+        const respostaIAExistente = post.respostas.find(r => r.tipo === 'ia');
+        if (respostaIAExistente) {
+            return res.json({
+                success: true,
+                resposta: respostaIAExistente,
+                jaExistia: true
+            });
+        }
+
+        const rawKey = process.env.GEMINI_API_KEY || process.env.API_KEY || process.env.GOOGLE_API_KEY || '';
+        const apiKey = rawKey.trim().replace(/^["']|["']$/g, '');
+
+        if (!apiKey) {
+            return res.status(500).json({ error: "Chave GEMINI_API_KEY não configurada no servidor." });
+        }
+
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const modelos = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-1.5-flash"];
+
+        const prompt = `Você é o assistente inteligente Overflowia.AI.
+Um estudante publicou a seguinte dúvida técnica no fórum:
+
+[TÍTULO]: ${post.titulo}
+[DESCRIÇÃO / CÓDIGO DO PROBLEMA]: ${post.desc}
+[TAGS]: ${post.tags.join(', ')}
+
+DIRETRIZES:
+1. Apresente uma solução direta, tecnicamente correta e didática.
+2. Explique brevemente o porquê do erro ter acontecido.
+3. Se fornecer código, use blocos Markdown indicando a linguagem (ex: \`\`\`javascript, \`\`\`python, \`\`\`css, \`\`\`html).
+4. Seja conciso e profissional.`;
+
+        let textoIA = null;
+        let erroIA = null;
+
+        for (const nomeModelo of modelos) {
+            try {
+                const model = genAI.getGenerativeModel({
+                    model: nomeModelo,
+                    generationConfig: { temperature: 0.7 }
+                });
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                textoIA = response.text();
+                if (textoIA) break;
+            } catch (err) {
+                erroIA = err;
+                console.warn(`Tentativa da IA com ${nomeModelo} falhou:`, err.message);
+            }
+        }
+
+        if (!textoIA) {
+            throw erroIA || new Error("Falha ao gerar resposta com a IA.");
+        }
+
+        const novaRespostaIA = {
+            tipo: 'ia',
+            autor: 'Overflowia.AI (Assistente Oficial)',
+            role: 'ia',
+            texto: textoIA,
+            votos: 1,
+            isMelhorResposta: false,
+            createdAt: new Date()
+        };
+
+        // Insere a resposta da IA no início da lista
+        post.respostas.unshift(novaRespostaIA);
+        await post.save();
+
+        return res.status(201).json({
+            success: true,
+            resposta: novaRespostaIA,
+            post: post
+        });
+
+    } catch (error) {
+        console.error("Erro ao acionar IA no fórum:", error);
+        return res.status(500).json({ error: error.message || "Erro ao gerar resposta com IA." });
+    }
+});
+
+// ⭐ 3. MARCAR / DESMARCAR MELHOR RESPOSTA (Solução Oficial)
+router.patch('/posts/:id/respostas/:respId/solucao', async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ error: "Pergunta não encontrada." });
+
+        let respostaEncontrada = false;
+
+        post.respostas.forEach(r => {
+            if (r._id.toString() === req.params.respId) {
+                r.isMelhorResposta = !r.isMelhorResposta; // Alterna status
+                respostaEncontrada = true;
+            } else {
+                r.isMelhorResposta = false; // Apenas uma resposta pode ser a melhor
+            }
+        });
+
+        if (!respostaEncontrada) {
+            return res.status(404).json({ error: "Resposta não encontrada." });
+        }
+
+        // Se houver qualquer melhor resposta marcada, o post fica com statusResolvido = true
+        post.statusResolvido = post.respostas.some(r => r.isMelhorResposta);
+        await post.save();
+
+        return res.json({
+            success: true,
+            statusResolvido: post.statusResolvido,
+            respostas: post.respostas
+        });
+    } catch (error) {
+        return res.status(500).json({ error: "Erro ao definir melhor resposta." });
     }
 });
 

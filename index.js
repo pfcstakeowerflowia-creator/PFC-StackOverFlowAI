@@ -29,6 +29,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const previewIcon = document.getElementById('preview-icon');
     const removeAttachmentBtn = document.getElementById('btn-remove-attachment');
 
+    // Menu Mobile (Drawer)
+    const openSidebarBtn = document.getElementById('btn-open-sidebar');
+    const closeSidebarBtn = document.getElementById('btn-close-sidebar');
+    const sidebar = document.querySelector('.side-panel');
+    const overlay = document.getElementById('sidebar-overlay');
+
     let selectedFile = null;
     let currentChatId = null; // ID da conversa ativa no MongoDB Atlas
 
@@ -40,14 +46,25 @@ document.addEventListener("DOMContentLoaded", () => {
     // 4. Carregamento Inicial do Histórico vindo do MongoDB
     carregarHistoricoSidebar();
 
-    // Evento: Iniciar Nova Conversa Limpa
+    // Controle do Menu Mobile
+    function toggleSidebar(open) {
+        if (sidebar) sidebar.classList.toggle('open', open);
+        if (overlay) overlay.classList.toggle('active', open);
+    }
+
+    if (openSidebarBtn) openSidebarBtn.addEventListener('click', () => toggleSidebar(true));
+    if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', () => toggleSidebar(false));
+    if (overlay) overlay.addEventListener('click', () => toggleSidebar(false));
+
+    // Botão de Nova Conversa
     if (btnNewChat) {
         btnNewChat.addEventListener('click', () => {
             iniciarNovoChat();
+            if (window.innerWidth <= 850) toggleSidebar(false);
         });
     }
 
-    // Gerenciador de Seleção de Anexos (Imagens / Prints de Erro)
+    // Gerenciador de Seleção de Anexos (Imagens, PDFs, Códigos)
     if (attachBtn && fileInput) {
         attachBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -58,6 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const file = e.target.files[0];
             if (!file) return;
 
+            // Limite de segurança de 15MB
             if (file.size > 15 * 1024 * 1024) {
                 alert("O arquivo excede o limite permitido de 15MB!");
                 fileInput.value = '';
@@ -140,7 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const safeMsg = msgDigitada.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-            // Exibe mensagem do usuário imediatamente na tela
+            // Exibe mensagem do usuário imediatamente
             msgArea.insertAdjacentHTML('beforeend', `
             <article class="message user-message" style="margin-top: 20px;">
                 <div class="message-content"> 
@@ -250,7 +268,7 @@ document.addEventListener("DOMContentLoaded", () => {
             listContainer.innerHTML = '';
 
             if (chats.length === 0) {
-                listContainer.innerHTML = `<li style="color: var(--text-secondary); font-size: 12px; padding: 8px;">Nenhuma conversa anterior salva no banco.</li>`;
+                listContainer.innerHTML = `<li style="color: var(--text-secondary); font-size: 12px; padding: 8px;">Nenhuma conversa anterior salva.</li>`;
                 return;
             }
 
@@ -275,6 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Clicar no título da conversa restaura as mensagens
                 li.querySelector('div').addEventListener('click', () => {
                     carregarConversaPorId(c._id, c.title);
+                    if (window.innerWidth <= 850) toggleSidebar(false);
                 });
 
                 // Clicar na lixeira remove a conversa do banco
@@ -306,10 +325,15 @@ document.addEventListener("DOMContentLoaded", () => {
             chat.messages.forEach(m => {
                 if (m.sender === 'user') {
                     const safeMsg = m.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    let attachmentHTML = '';
+                    if (m.attachment && m.attachment.name) {
+                        attachmentHTML = `<div style="margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 8px; font-size: 13px;"><i class="fas fa-paperclip"></i> <span>${m.attachment.name}</span></div>`;
+                    }
                     msgArea.insertAdjacentHTML('beforeend', `
                     <article class="message user-message" style="margin-top: 20px;">
                         <div class="message-content"> 
                             <p style="white-space: pre-wrap;">${safeMsg}</p> 
+                            ${attachmentHTML}
                         </div>
                     </article>`);
                 } else {
@@ -399,11 +423,12 @@ function renderizarPerfilLateral(isLoggedIn) {
     const wrapper = document.getElementById('sidebar-auth-wrapper');
     if (!wrapper) return;
     if (isLoggedIn) {
+        const nomeUsuario = localStorage.getItem('userName') || "Aluno PFC Logado";
         wrapper.innerHTML = `
         <div class="user-profile">
             <div class="avatar"><i class="fas fa-user"></i></div>
             <div class="user-info">
-                <span class="user-name">Aluno PFC Logado</span>
+                <span class="user-name">${nomeUsuario}</span>
                 <span class="user-role">Autenticado Local DB</span>
             </div>
             <button class="icon-btn text-danger" onclick="window.logout()" style="background:none; border:none; cursor:pointer;" title="Desconectar"><i class="fas fa-sign-out-alt"></i></button>
@@ -419,5 +444,6 @@ function renderizarPerfilLateral(isLoggedIn) {
 // Logout de Sessão
 window.logout = function() {
     localStorage.removeItem('isLoggedIn'); 
+    localStorage.removeItem('userName');
     window.location.reload(); 
 };

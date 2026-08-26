@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Overflowia AI - Assistente Técnico e Comunidade</title>
     <link rel="stylesheet" href="style.css">
     
@@ -12,25 +12,35 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Fontes e Ícones -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <!-- LINK DE SALTO (Acessibilidade) -->
+    <!-- LINK DE SALTO (Acessibilidade para Leitores de Tela - WCAG AAA) -->
     <a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
 
     <div class="app-layout">
         
-        <!-- SIDEBAR DE NAVEGAÇÃO -->
+        <!-- Sombra de Fundo para o Menu Mobile (Overlay) -->
+        <div id="sidebar-overlay" class="sidebar-overlay" aria-hidden="true"></div>
+
+        <!-- SIDEBAR DE NAVEGAÇÃO / DRAWER RESPONSIVO -->
         <aside class="side-panel" role="navigation" aria-label="Menu Lateral">
             <div class="brand">
-                <div class="brand-icon" aria-hidden="true"><i class="fas fa-brain"></i></div>
-                <h2>Overflowia.AI</h2>
+                <div class="brand-wrapper">
+                    <div class="brand-icon" aria-hidden="true"><i class="fas fa-brain"></i></div>
+                    <h2>Overflowia.AI</h2>
+                </div>
+                <!-- Botão para fechar o menu no celular -->
+                <button id="btn-close-sidebar" class="btn-close-sidebar" aria-label="Fechar menu lateral">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
             </div>
             
             <!-- Ferramenta de Acessibilidade: Alto Contraste -->
             <div class="accessibility-tools" style="margin-bottom: 15px; padding: 10px; border-bottom: 1px solid var(--border-color);">
-                <button id="toggle-contrast" class="nav-btn secondary-btn" style="width: 100%;" aria-label="Ativar Alto Contraste">
+                <button id="toggle-contrast" class="nav-btn secondary-btn" style="width: 100%; justify-content: center;" aria-label="Ativar Alto Contraste">
                     <i class="fas fa-adjust" aria-hidden="true"></i> Alto Contraste
                 </button>
             </div>
@@ -59,7 +69,7 @@
                 <h3>Histórico no MongoDB</h3>
                 <ul class="chat-list" id="chat-history-list">
                     <li style="color: var(--text-secondary); font-size: 12px; padding: 8px;">
-                        <i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i> Carregando conversas do banco...
+                        <i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i> Carregando histórico...
                     </li>
                 </ul>
             </div>
@@ -68,12 +78,18 @@
             <div id="sidebar-auth-wrapper"></div>
         </aside>
 
-        <!-- CONTEÚDO PRINCIPAL DO CHAT -->
+        <!-- ÁREA PRINCIPAL DO CHAT -->
         <main class="chat-container" id="main-content" role="main">
             <header class="top-bar">
-                <div class="current-chat-title">
-                    <h1 id="current-chat-header-title">Assistente Técnico Inteligente</h1>
-                    <span class="model-badge" aria-label="Modelo ativo: Gemini 2.5 + RAG Local">Gemini 2.5 Flash + MongoDB RAG</span>
+                <div class="header-left">
+                    <!-- Botão Hambúrguer para Celulares e Tablets -->
+                    <button id="btn-open-sidebar" class="mobile-menu-btn" aria-label="Abrir menu lateral">
+                        <i class="fas fa-bars" aria-hidden="true"></i>
+                    </button>
+                    <div class="current-chat-title">
+                        <h1 id="current-chat-header-title">Assistente Técnico Inteligente</h1>
+                        <span class="model-badge" aria-label="Modelo ativo: Gemini 2.5 + RAG Local">Gemini 2.5 Flash + MongoDB RAG</span>
+                    </div>
                 </div>
             </header>
 
@@ -82,7 +98,7 @@
                 <article class="message ai-message">
                     <div class="avatar-ai" aria-hidden="true"><i class="fas fa-robot"></i></div>
                     <div class="message-content">
-                        <p>Olá! Sou o assistente do <strong>Overflowia.AI</strong>. Todas as nossas conversas agora são persistidas em nuvem no <strong>MongoDB Atlas</strong> e integradas ao conhecimento do fórum local via <strong>RAG</strong>.</p>
+                        <p>Olá! Sou o assistente do <strong>Overflowia.AI</strong>. Nossas conversas agora são salvas na nuvem com o <strong>MongoDB Atlas</strong> e enriquecidas com o conhecimento do fórum local via <strong>RAG</strong>.</p>
                     </div>
                 </article>
             </div>
@@ -101,12 +117,15 @@
                 </div>
 
                 <div class="input-box">
-                    <button class="attach-btn" aria-label="Anexar print de erro ou arquivo de código"><i class="fas fa-paperclip" aria-hidden="true"></i></button>
+                    <!-- Botão de Anexo (Upload de Imagens / Prints de Erro) -->
+                    <button class="attach-btn" aria-label="Anexar print de erro ou arquivo de código">
+                        <i class="fas fa-paperclip" aria-hidden="true"></i>
+                    </button>
                     <input type="file" id="file-input" style="display: none;" accept="image/*,application/pdf,text/*">
                     
                     <textarea 
                         id="user-input"
-                        placeholder="Digite sua dúvida ou cole código aqui (Shift+Enter para quebra de linha)..." 
+                        placeholder="Digite sua dúvida técnica ou cole código aqui (Shift+Enter para quebra de linha)..." 
                         rows="1" 
                         aria-label="Campo de entrada de pergunta"></textarea>
                     
@@ -122,7 +141,26 @@
         </main>
     </div>
 
-    <!-- Script de Integração com o Backend -->
+    <!-- Script Principal com Lógica de Chat, Histórico e Menu Mobile -->
     <script src="index.js"></script>
+
+    <!-- Script de Controle do Menu Mobile (Drawer) -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const openBtn = document.getElementById('btn-open-sidebar');
+            const closeBtn = document.getElementById('btn-close-sidebar');
+            const sidebar = document.querySelector('.side-panel');
+            const overlay = document.getElementById('sidebar-overlay');
+
+            function toggleSidebar(open) {
+                if (sidebar) sidebar.classList.toggle('open', open);
+                if (overlay) overlay.classList.toggle('active', open);
+            }
+
+            if (openBtn) openBtn.addEventListener('click', () => toggleSidebar(true));
+            if (closeBtn) closeBtn.addEventListener('click', () => toggleSidebar(false));
+            if (overlay) overlay.addEventListener('click', () => toggleSidebar(false));
+        });
+    </script>
 </body>
 </html>

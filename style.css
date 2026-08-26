@@ -1,25 +1,25 @@
 /* --- PALETA DE CORES DARK MODE PREMIUM --- */
 :root {
-    --bg-main: #131314;         /* Fundo principal do chat */
-    --bg-sidebar: #1e1e20;      /* Fundo do menu lateral */
-    --bg-surface: #28282a;      /* Fundo de elementos soltos */
-    --bg-input: #2f2f32;        /* Fundo da caixa de texto */
+    --bg-main: #131314;
+    --bg-sidebar: #1e1e20;
+    --bg-surface: #28282a;
+    --bg-input: #2f2f32;
     
-    --text-primary: #e3e3e3;    /* Texto principal (branco suave) */
-    --text-secondary: #a0a0a5;  /* Texto secundário (cinza) */
+    --text-primary: #e3e3e3;
+    --text-secondary: #a0a0a5;
     
-    --accent-color: #7b61ff;    /* Roxo principal da marca */
+    --accent-color: #7b61ff;
     --accent-hover: #6a50e8;
     
-    --user-msg-bg: #7b61ff;     /* Cor do balão do usuário */
-    --ai-msg-bg: #28282a;       /* Cor do balão da IA */
+    --user-msg-bg: #7b61ff;
+    --ai-msg-bg: #28282a;
     
-    --border-color: #333336;    /* Linhas divisórias */
-    --focus-outline: #7b61ff;   /* Cor do foco de navegação acessível */
+    --border-color: #333336;
+    --focus-outline: #7b61ff;
 }
 
 /* ===================================================
-   SEÇÃO DE ACESSIBILIDADE: ALTO CONTRASTE (WCAG AAA)
+   ACESSIBILIDADE: ALTO CONTRASTE (WCAG AAA)
    =================================================== */
 body.high-contrast {
     --bg-main: #000000 !important;
@@ -27,78 +27,82 @@ body.high-contrast {
     --bg-surface: #000000 !important;
     --bg-input: #000000 !important;
     
-    --text-primary: #ffff00 !important; /* Texto Amarelo para contraste máximo */
+    --text-primary: #ffff00 !important; /* Amarelo de alto contraste */
     --text-secondary: #ffffff !important;
     
     --accent-color: #ffff00 !important;
     --accent-hover: #ffffff !important;
     
-    --user-msg-bg: #ffffff !important; /* Balão do usuário branco */
-    --ai-msg-bg: #000000 !important;    /* Balão da IA preto */
+    --user-msg-bg: #000000 !important; /* Balão do usuário com fundo preto */
+    --ai-msg-bg: #000000 !important;    /* Balão da IA com fundo preto */
     
     --border-color: #ffff00 !important;
-    --focus-outline: #ff0000 !important; /* Foco em vermelho vivo */
+    --focus-outline: #ff0000 !important;
 }
 
-/* Ajustes no Alto Contraste */
-body.high-contrast .user-message .message-content {
-    color: #000000 !important;
-    font-weight: bold;
+/* Balão da sua mensagem (Usuário) no Alto Contraste: Letra Amarela e Borda Amarela */
+body.high-contrast .user-message .message-content,
+body.high-contrast .user-message .message-content p {
+    background-color: #000000 !important;
+    color: #ffff00 !important; /* Letra Amarela brilhante */
+   
+    font-weight: 600;
 }
 
-body.high-contrast .ai-message .message-content {
-    border: 2px solid #ffff00 !important;
+/* Balão da IA no Alto Contraste: Letra Branca e Borda Ciano para diferenciar */
+body.high-contrast .ai-message .message-content,
+body.high-contrast .ai-message .message-content p {
+    background-color: #000000 !important;
+    color: #ffffff !important; /* Letra Branca */
+    
 }
 
+/* Botão de copiar código no Alto Contraste */
 body.high-contrast .copy-code-btn {
     background: #000000 !important;
     color: #ffff00 !important;
     border: 1px solid #ffff00 !important;
 }
-
-/* ===================================================
-   LINKS DE SALTO E NAVEGAÇÃO POR TECLADO
-   =================================================== */
-:focus {
-    outline: 3px solid var(--focus-outline) !important;
-    outline-offset: 2px;
-}
-
-.skip-link {
-    position: absolute;
-    top: -100px;
-    left: 0;
-    background: var(--accent-color);
-    color: white;
-    padding: 10px 20px;
-    z-index: 9999;
-    text-decoration: none;
-    font-weight: bold;
-    border-radius: 0 0 8px 0;
-    transition: top 0.3s;
-}
-
-.skip-link:focus {
-    top: 0;
-}
-
 /* ================================
    RESET BÁSICO 
    ================================ */
 * {
-    margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 body {
     background-color: var(--bg-main);
     color: var(--text-primary);
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
 }
 
 .app-layout {
     display: flex;
     height: 100vh;
+    height: 100dvh;
+    position: relative;
+}
+
+/* Fundo Escurecido no Mobile ao abrir Menu */
+.sidebar-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(3px);
+    z-index: 998;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
 }
 
 /* ================================
@@ -111,13 +115,21 @@ body {
     display: flex;
     flex-direction: column;
     padding: 20px;
+    flex-shrink: 0;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .brand {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.brand-wrapper {
+    display: flex;
+    align-items: center;
     gap: 12px;
-    margin-bottom: 20px;
 }
 
 .brand-icon {
@@ -136,6 +148,16 @@ body {
 .brand h2 {
     font-size: 18px;
     font-weight: 600;
+}
+
+.btn-close-sidebar {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
 }
 
 /* Histórico de Conversas Salvas no MongoDB */
@@ -239,7 +261,6 @@ body {
     border-color: var(--text-secondary);
 }
 
-/* Perfil do Usuário na Sidebar */
 #sidebar-auth-wrapper {
     margin-top: auto;
 }
@@ -267,11 +288,15 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 .user-name {
     font-size: 13px;
     font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .user-role {
@@ -294,6 +319,7 @@ body {
     flex-direction: column;
     position: relative;
     overflow: hidden;
+    min-width: 0;
 }
 
 .top-bar {
@@ -308,9 +334,39 @@ body {
     z-index: 10;
 }
 
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Botão Hambúrguer Mobile */
+.mobile-menu-btn {
+    display: none;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.mobile-menu-btn:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
 .current-chat-title h1 {
     font-size: 16px;
     font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .model-badge {
@@ -360,6 +416,7 @@ body {
     font-size: 14.5px;
     line-height: 1.5;
     box-shadow: 0 4px 15px rgba(123, 97, 255, 0.15);
+    word-break: break-word;
 }
 
 .ai-message {
@@ -385,6 +442,7 @@ body {
     border: 1px solid var(--border-color);
     font-size: 14.5px;
     line-height: 1.6;
+    word-break: break-word;
 }
 
 /* ===================================================
@@ -397,6 +455,7 @@ pre {
     overflow: hidden;
     border: 1px solid var(--border-color);
     background-color: #1e1e20 !important;
+    max-width: 100%;
 }
 
 pre code {
@@ -408,7 +467,6 @@ pre code {
     overflow-x: auto;
 }
 
-/* Botão de Copiar Código */
 .copy-code-btn {
     position: absolute;
     top: 8px;
@@ -462,6 +520,7 @@ pre code {
     cursor: pointer;
     font-size: 16px;
     transition: color 0.2s;
+    padding: 4px;
 }
 
 .attach-btn:hover {
@@ -494,6 +553,7 @@ pre code {
     align-items: center;
     cursor: pointer;
     transition: 0.2s;
+    flex-shrink: 0;
 }
 
 .send-btn:hover {
@@ -508,7 +568,6 @@ pre code {
     margin-top: 10px;
 }
 
-/* Barra de Pré-visualização do Anexo */
 .attachment-preview-bar {
     display: flex;
     margin-bottom: 8px;
@@ -526,6 +585,14 @@ pre code {
     font-size: 12.5px;
     color: var(--text-primary);
     box-shadow: 0 2px 10px rgba(123, 97, 255, 0.15);
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.attachment-badge span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .attachment-badge i {
@@ -543,4 +610,93 @@ pre code {
 
 #btn-remove-attachment:hover {
     color: #f43f5e;
+}
+
+/* ===================================================
+   RESPONSIVIDADE: TABLETS E SMARTPHONES
+   =================================================== */
+
+/* Telas menores que 1024px (Tablets e Laptops pequenos) */
+@media (max-width: 1024px) {
+    .messages-area {
+        padding: 25px 8%;
+    }
+    .input-container {
+        padding: 12px 8% 18px;
+    }
+}
+
+/* Telas menores que 850px (Smartphones e Tablets em pé) */
+@media (max-width: 850px) {
+    .side-panel {
+        position: fixed;
+        top: 0;
+        left: -300px;
+        height: 100%;
+        height: 100dvh;
+        z-index: 999;
+        box-shadow: 5px 0 25px rgba(0,0,0,0.6);
+    }
+
+    .side-panel.open {
+        left: 0;
+    }
+
+    .btn-close-sidebar {
+        display: block;
+    }
+
+    .mobile-menu-btn {
+        display: flex;
+    }
+
+    .top-bar {
+        padding: 0 15px;
+    }
+
+    .messages-area {
+        padding: 15px 12px;
+        gap: 18px;
+    }
+
+    .message {
+        max-width: 95%;
+    }
+
+    .input-container {
+        padding: 10px 12px 14px;
+    }
+
+    .user-message .message-content {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+
+    .ai-message .message-content {
+        padding: 14px 16px;
+        font-size: 14px;
+    }
+}
+
+/* Telas muito pequenas (Smartphones < 480px) */
+@media (max-width: 480px) {
+    .current-chat-title h1 {
+        font-size: 14px;
+        max-width: 180px;
+    }
+
+    .model-badge {
+        display: none;
+    }
+
+    .avatar-ai {
+        width: 30px;
+        height: 30px;
+        font-size: 13px;
+    }
+
+    pre code {
+        font-size: 12px;
+        padding: 12px;
+    }
 }

@@ -9,8 +9,6 @@ const User = require('../models/User');
 // =================================================================
 // 1. ROTAS DE AUTENTICAÇÃO NO MONGODB ATLAS
 // =================================================================
-
-// Criar Nova Conta (Registro)
 router.post('/auth/register', async (req, res) => {
     try {
         const { nome, email, senha, role, adminCode } = req.body;
@@ -62,7 +60,6 @@ router.post('/auth/register', async (req, res) => {
     }
 });
 
-// Login de Usuário / Admin
 router.post('/auth/login', async (req, res) => {
     try {
         const { email, senha } = req.body;
@@ -109,10 +106,8 @@ router.delete('/chats/:id', chatController.excluirConversa);
 
 
 // =================================================================
-// 3. ROTAS DO FÓRUM (RAG BASE & SISTEMA HÍBRIDO DE RESPOSTAS)
+// 3. ROTAS DO FÓRUM (RAG BASE, RESPOSTAS & COMENTÁRIOS)
 // =================================================================
-
-// Listar dúvidas com filtros
 router.get('/posts', async (req, res) => {
     try {
         const { filtro } = req.query;
@@ -126,7 +121,6 @@ router.get('/posts', async (req, res) => {
     }
 });
 
-// Obter uma dúvida específica com todas as respostas
 router.get('/posts/:id', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -137,7 +131,6 @@ router.get('/posts/:id', async (req, res) => {
     }
 });
 
-// Publicar nova dúvida
 router.post('/posts', async (req, res) => {
     try {
         const { titulo, desc, tags, author } = req.body;
@@ -158,12 +151,10 @@ router.post('/posts', async (req, res) => {
         await novoPost.save();
         return res.status(201).json(novoPost);
     } catch (error) {
-        console.error("Erro ao criar postagem:", error.message);
         return res.status(500).json({ error: "Falha ao salvar postagem no banco." });
     }
 });
 
-// Votar em post (PATCH atômico)
 router.patch('/posts/:id/vote', async (req, res) => {
     try {
         const postAtualizado = await Post.findByIdAndUpdate(
@@ -178,7 +169,6 @@ router.patch('/posts/:id/vote', async (req, res) => {
     }
 });
 
-// Excluir postagem do fórum
 router.delete('/posts/:id', async (req, res) => {
     try {
         const postExcluido = await Post.findByIdAndDelete(req.params.id);
@@ -191,7 +181,7 @@ router.delete('/posts/:id', async (req, res) => {
     }
 });
 
-// ✍️ 1. ADICIONAR RESPOSTA HUMANA (Comunidade / Alunos / Admins)
+// Adicionar Resposta Humana à Pergunta
 router.post('/posts/:id/respostas', async (req, res) => {
     try {
         const { texto, autor, role } = req.body;
@@ -212,6 +202,7 @@ router.post('/posts/:id/respostas', async (req, res) => {
             texto: texto.trim(),
             votos: 0,
             isMelhorResposta: false,
+            comentarios: [],
             createdAt: new Date()
         };
 
@@ -224,12 +215,54 @@ router.post('/posts/:id/respostas', async (req, res) => {
             post: post
         });
     } catch (error) {
-        console.error("Erro ao publicar resposta humana:", error);
         return res.status(500).json({ error: "Erro ao salvar a resposta no banco." });
     }
 });
 
-// 🤖 2. GERAR RESPOSTA AUTOMÁTICA DA IA (Google Gemini)
+// 💬 NOVO: Adicionar Comentário/Réplica em uma Resposta Específica
+router.post('/posts/:postId/respostas/:respostaId/comentarios', async (req, res) => {
+    try {
+        const { texto, autor, role } = req.body;
+
+        if (!texto || !texto.trim()) {
+            return res.status(400).json({ error: "O comentário não pode ficar vazio." });
+        }
+
+        const post = await Post.findById(req.params.postId);
+        if (!post) {
+            return res.status(404).json({ error: "Pergunta não encontrada." });
+        }
+
+        const resposta = post.respostas.id(req.params.respostaId) || post.respostas.find(r => r._id.toString() === req.params.respostaId);
+        if (!resposta) {
+            return res.status(404).json({ error: "Resposta não encontrada para comentar." });
+        }
+
+        if (!resposta.comentarios) {
+            resposta.comentarios = [];
+        }
+
+        resposta.comentarios.push({
+            autor: autor || "Aluno PFC Logado",
+            role: role || "aluno",
+            texto: texto.trim(),
+            createdAt: new Date()
+        });
+
+        await post.save();
+
+        return res.status(201).json({
+            success: true,
+            comentarios: resposta.comentarios,
+            post: post
+        });
+    } catch (error) {
+        console.error("Erro ao adicionar comentário:", error);
+        return res.status(500).json({ error: "Erro ao salvar comentário no banco de dados." });
+    }
+});
+
+// Gerar Resposta Automática da IA com Gemini
 router.post('/posts/:id/gerar-resposta-ia', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -237,7 +270,6 @@ router.post('/posts/:id/gerar-resposta-ia', async (req, res) => {
             return res.status(404).json({ error: "Pergunta não encontrada." });
         }
 
-        // Se a IA já respondeu esta pergunta, retorna a resposta já salva
         const respostaIAExistente = post.respostas.find(r => r.tipo === 'ia');
         if (respostaIAExistente) {
             return res.json({
@@ -300,10 +332,10 @@ DIRETRIZES:
             texto: textoIA,
             votos: 1,
             isMelhorResposta: false,
+            comentarios: [],
             createdAt: new Date()
         };
 
-        // Insere a resposta da IA no início da lista
         post.respostas.unshift(novaRespostaIA);
         await post.save();
 
@@ -314,12 +346,11 @@ DIRETRIZES:
         });
 
     } catch (error) {
-        console.error("Erro ao acionar IA no fórum:", error);
         return res.status(500).json({ error: error.message || "Erro ao gerar resposta com IA." });
     }
 });
 
-// ⭐ 3. MARCAR / DESMARCAR MELHOR RESPOSTA (Solução Oficial)
+// Marcar / Desmarcar Melhor Resposta
 router.patch('/posts/:id/respostas/:respId/solucao', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -329,10 +360,10 @@ router.patch('/posts/:id/respostas/:respId/solucao', async (req, res) => {
 
         post.respostas.forEach(r => {
             if (r._id.toString() === req.params.respId) {
-                r.isMelhorResposta = !r.isMelhorResposta; // Alterna status
+                r.isMelhorResposta = !r.isMelhorResposta;
                 respostaEncontrada = true;
             } else {
-                r.isMelhorResposta = false; // Apenas uma resposta pode ser a melhor
+                r.isMelhorResposta = false;
             }
         });
 
@@ -340,7 +371,6 @@ router.patch('/posts/:id/respostas/:respId/solucao', async (req, res) => {
             return res.status(404).json({ error: "Resposta não encontrada." });
         }
 
-        // Se houver qualquer melhor resposta marcada, o post fica com statusResolvido = true
         post.statusResolvido = post.respostas.some(r => r.isMelhorResposta);
         await post.save();
 

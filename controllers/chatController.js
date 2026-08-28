@@ -1,7 +1,6 @@
-
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const Post = require("../models/Post");
-const Chat = require("../models/chat"); // <-- Mude para 'chat' minúsculo
+const Post = require("../models/post");
+const Chat = require("../models/chat");
 
 // 1. Enviar Mensagem, Consultar RAG e Salvar Interação no MongoDB
 exports.enviarMensagem = async (req, res) => {
@@ -10,7 +9,6 @@ exports.enviarMensagem = async (req, res) => {
         const arquivoUsuario = req.body.arquivo;
         let chatId = req.body.chatId;
 
-        // Limpa e valida a chave da API
         const rawKey = process.env.GEMINI_API_KEY || process.env.API_KEY || process.env.GOOGLE_API_KEY || "";
         const apiKey = rawKey.trim().replace(/^["']|["']$/g, '');
 
@@ -20,11 +18,10 @@ exports.enviarMensagem = async (req, res) => {
             });
         }
 
-        // --- ETAPA 1: RAG (Recuperação de dúvidas relevantes no Fórum MongoDB) ---
+        // --- ETAPA 1: RAG Avançado (Busca no Fórum MongoDB) ---
         let contextoDb = [];
         try {
             if (msgUsuario.trim().length > 0) {
-                // Remove caracteres especiais para evitar erros no Regex do Mongo (ex: C++, [], ())
                 const palavrasChave = msgUsuario
                     .replace(/[^\w\sÀ-ú]/gi, '')
                     .split(/\s+/)
@@ -43,14 +40,24 @@ exports.enviarMensagem = async (req, res) => {
                 }
             }
         } catch (dbErr) {
-            console.warn("⚠️ Aviso RAG (busca textual ignorada):", dbErr.message);
+            console.warn("⚠️ Aviso RAG:", dbErr.message);
         }
 
-        const textoContexto = contextoDb.length > 0
-            ? contextoDb.map(p => `• [Tópico Fórum]: "${p.titulo}"\n  Conteúdo/Solução: ${p.desc}`).join("\n\n")
-            : "Nenhum post relevante encontrado no fórum local.";
+        let textoContexto = "Nenhum post relevante encontrado no fórum local.";
+        if (contextoDb.length > 0) {
+            textoContexto = contextoDb.map(p => {
+                let solucaoTexto = p.desc;
+                const melhorResp = Array.isArray(p.respostas) ? p.respostas.find(r => r.isMelhorResposta) : null;
+                if (melhorResp) {
+                    solucaoTexto += `\n  [SOLUÇÃO APROVADA DA COMUNIDADE]: ${melhorResp.texto}`;
+                } else if (p.respostas && p.respostas.length > 0) {
+                    solucaoTexto += `\n  [RESPOSTA DA COMUNIDADE]: ${p.respostas[0].texto}`;
+                }
+                return `• [Tópico Fórum]: "${p.titulo}" (Status: ${p.statusResolvido ? 'Resolvido' : 'Em aberto'})\n  Conteúdo: ${solucaoTexto}`;
+            }).join("\n\n");
+        }
 
-        // --- ETAPA 2: Engenharia de Prompt e Instrução do Sistema ---
+        // --- ETAPA 2: Engenharia de Prompt ---
         const systemInstruction = `Você é o Overflowia.AI, uma inteligência artificial especialista em programação, algoritmos e engenharia de software.
 
 DIRETRIZES:
@@ -65,7 +72,6 @@ ${textoContexto}`;
         const promptPrincipal = msgUsuario || "Analise o arquivo anexado e apresente a solução técnica completa.";
         const parts = [promptPrincipal];
 
-        // Anexo multimodal se enviado pelo usuário
         if (arquivoUsuario && arquivoUsuario.base64 && arquivoUsuario.mimeType) {
             parts.push({
                 inlineData: {
@@ -99,7 +105,7 @@ ${textoContexto}`;
                 }
             } catch (errModelo) {
                 erroUltimo = errModelo;
-                console.warn(`⚠️ Modelo ${nomeModelo} falhou. Tentando próximo da lista...`);
+                console.warn(`⚠️ Modelo ${nomeModelo} falhou. Tentando próximo...`);
             }
         }
 
@@ -120,7 +126,6 @@ ${textoContexto}`;
         };
 
         if (chatId) {
-            // Conversa existente: anexa as mensagens ao documento
             chatDoc = await Chat.findById(chatId);
             if (chatDoc) {
                 chatDoc.messages.push(dadosMsgUsuario);
@@ -131,7 +136,6 @@ ${textoContexto}`;
         }
 
         if (!chatDoc) {
-            // Nova conversa: cria um novo registro no MongoDB
             const tituloSintetico = msgUsuario.length > 35 
                 ? msgUsuario.substring(0, 35) + "..." 
                 : (msgUsuario || "Análise de Arquivo / Código");
@@ -145,7 +149,6 @@ ${textoContexto}`;
             chatId = chatDoc._id;
         }
 
-        // Retorna a resposta junto com o ID e título da conversa no MongoDB
         return res.json({
             resposta: respostaTexto,
             chatId: chatDoc._id,
@@ -155,12 +158,11 @@ ${textoContexto}`;
     } catch (error) {
         console.error("❌ Erro no chatController:", error.message);
         return res.json({
-            resposta: `⚠️ **Falha no processamento da IA:**\n\n\`${error.message}\`\n\n*Dica: Verifique se sua GEMINI_API_KEY no .env é válida.*`
+            resposta: `⚠️ **Falha no processamento da IA:**\n\n\`${error.message}\``
         });
     }
 };
 
-// 2. Listar todas as conversas salvas no MongoDB (para preencher a sidebar)
 exports.listarConversas = async (req, res) => {
     try {
         const conversas = await Chat.find({}, '_id title updatedAt createdAt')
@@ -168,12 +170,10 @@ exports.listarConversas = async (req, res) => {
             .limit(25);
         return res.json(conversas);
     } catch (error) {
-        console.error("Erro ao listar conversas:", error.message);
-        return res.status(500).json({ error: "Erro ao listar conversas do banco." });
+        return res.status(500).json({ error: "Erro ao listar conversas." });
     }
 };
 
-// 3. Obter uma conversa específica com todas as mensagens anteriores
 exports.obterConversaPorId = async (req, res) => {
     try {
         const conversa = await Chat.findById(req.params.id);
@@ -182,21 +182,15 @@ exports.obterConversaPorId = async (req, res) => {
         }
         return res.json(conversa);
     } catch (error) {
-        console.error("Erro ao carregar histórico:", error.message);
-        return res.status(500).json({ error: "Erro ao buscar histórico da conversa." });
+        return res.status(500).json({ error: "Erro ao buscar histórico." });
     }
 };
 
-// 4. Excluir uma conversa do MongoDB
 exports.excluirConversa = async (req, res) => {
     try {
-        const chatExcluido = await Chat.findByIdAndDelete(req.params.id);
-        if (!chatExcluido) {
-            return res.status(404).json({ error: "Conversa não encontrada para exclusão." });
-        }
+        await Chat.findByIdAndDelete(req.params.id);
         return res.json({ success: true, message: "Conversa excluída com sucesso." });
     } catch (error) {
-        console.error("Erro ao excluir conversa:", error.message);
-        return res.status(500).json({ error: "Erro ao excluir conversa do banco." });
+        return res.status(500).json({ error: "Erro ao excluir conversa." });
     }
 };

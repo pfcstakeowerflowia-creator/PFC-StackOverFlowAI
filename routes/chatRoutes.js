@@ -3,8 +3,8 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const chatController = require('../controllers/chatController');
-const Post = require('../models/Post');
-const User = require('../models/User');
+const Post = require('../models/post');
+const User = require('../models/user');
 
 // =================================================================
 // 1. ROTAS DE AUTENTICAÇÃO NO MONGODB ATLAS
@@ -95,7 +95,6 @@ router.post('/auth/login', async (req, res) => {
     }
 });
 
-
 // =================================================================
 // 2. ROTAS DO CHAT E HISTÓRICO MONGODB
 // =================================================================
@@ -103,7 +102,6 @@ router.post('/chat', chatController.enviarMensagem);
 router.get('/chats', chatController.listarConversas);
 router.get('/chats/:id', chatController.obterConversaPorId);
 router.delete('/chats/:id', chatController.excluirConversa);
-
 
 // =================================================================
 // 3. ROTAS DO FÓRUM (RAG BASE, RESPOSTAS & COMENTÁRIOS)
@@ -173,7 +171,7 @@ router.delete('/posts/:id', async (req, res) => {
     try {
         const postExcluido = await Post.findByIdAndDelete(req.params.id);
         if (!postExcluido) {
-            return res.status(404).json({ error: "Postagem não encontrada." });
+            return res.status(404).json({ error: "Postagem não encontrada no banco." });
         }
         return res.json({ success: true, message: "Postagem excluída com sucesso." });
     } catch (error) {
@@ -219,7 +217,7 @@ router.post('/posts/:id/respostas', async (req, res) => {
     }
 });
 
-// 💬 NOVO: Adicionar Comentário/Réplica em uma Resposta Específica
+// Adicionar Comentário/Réplica em uma Resposta Específica
 router.post('/posts/:postId/respostas/:respostaId/comentarios', async (req, res) => {
     try {
         const { texto, autor, role } = req.body;

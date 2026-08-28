@@ -3,14 +3,22 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const apiRoutes = require('./routes/chatRoutes');
+
+// ATENÇÃO: se seu arquivo for ChatRoutes.js (com C maiúsculo), mantenha ./routes/ChatRoutes
+// se for chatRoutes.js (minúsculo), mantenha ./routes/chatRoutes
+let apiRoutes;
+try {
+    apiRoutes = require('/routes/ChatRoutes');
+} catch (e) {
+    apiRoutes = require('./routes/chatRoutes');
+}
 
 const app = express();
 
-// Habilita CORS para requisições do frontend
+// Habilita CORS
 app.use(cors());
 
-// Aumenta o limite de payload para 50MB (permite mensagens longas e envio de imagens em Base64)
+// Limite de payload em 50MB para suportar imagens em Base64
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 

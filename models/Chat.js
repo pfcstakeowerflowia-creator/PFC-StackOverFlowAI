@@ -43,5 +43,4 @@ const ChatSchema = new mongoose.Schema({
     }
 });
 
-// Exporta o modelo com proteção contra recompilação múltipla
 module.exports = mongoose.models.Chat || mongoose.model('Chat', ChatSchema);

@@ -53,7 +53,6 @@ const RespostaSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    // Array de comentários/réplicas na resposta
     comentarios: [ComentarioSchema],
     createdAt: {
         type: Date,

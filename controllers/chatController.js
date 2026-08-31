@@ -1,6 +1,6 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const Post = require("../models/post");
-const Chat = require("../models/chat");
+const Post = require("../models/Post");
+const Chat = require("../models/Chat");
 
 // 1. Enviar Mensagem, Consultar RAG e Salvar Interação no MongoDB
 exports.enviarMensagem = async (req, res) => {
@@ -14,7 +14,7 @@ exports.enviarMensagem = async (req, res) => {
 
         if (!apiKey) {
             return res.json({
-                resposta: "⚠️ **Chave de API não configurada:** Adicione a variável `GEMINI_API_KEY` ao arquivo `.env` do servidor."
+                resposta: "⚠️ **Chave de API não configurada:** Adicione a variável `GEMINI_API_KEY` ao arquivo `.env`."
             });
         }
 
@@ -163,6 +163,7 @@ ${textoContexto}`;
     }
 };
 
+// 2. Listar Conversas
 exports.listarConversas = async (req, res) => {
     try {
         const conversas = await Chat.find({}, '_id title updatedAt createdAt')
@@ -170,10 +171,12 @@ exports.listarConversas = async (req, res) => {
             .limit(25);
         return res.json(conversas);
     } catch (error) {
+        console.error("❌ Erro ao listar conversas:", error.message);
         return res.status(500).json({ error: "Erro ao listar conversas." });
     }
 };
 
+// 3. Obter Conversa por ID
 exports.obterConversaPorId = async (req, res) => {
     try {
         const conversa = await Chat.findById(req.params.id);
@@ -186,6 +189,7 @@ exports.obterConversaPorId = async (req, res) => {
     }
 };
 
+// 4. Excluir Conversa
 exports.excluirConversa = async (req, res) => {
     try {
         await Chat.findByIdAndDelete(req.params.id);

@@ -2,13 +2,17 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+
+// Importações dos modelos e do controller
 const chatController = require('../controllers/chatController');
-const Post = require('../models/post');
-const User = require('../models/user');
+const Post = require('../models/Post');
+const User = require('../models/User');
 
 // =================================================================
 // 1. ROTAS DE AUTENTICAÇÃO NO MONGODB ATLAS
 // =================================================================
+
+// Cadastro de novos usuários (Aluno vs Administrador)
 router.post('/auth/register', async (req, res) => {
     try {
         const { nome, email, senha, role, adminCode } = req.body;
@@ -60,6 +64,7 @@ router.post('/auth/register', async (req, res) => {
     }
 });
 
+// Autenticação de usuários existentes
 router.post('/auth/login', async (req, res) => {
     try {
         const { email, senha } = req.body;
@@ -96,16 +101,26 @@ router.post('/auth/login', async (req, res) => {
 });
 
 // =================================================================
-// 2. ROTAS DO CHAT E HISTÓRICO MONGODB
+// 2. ROTAS DO CHAT COM IA E HISTÓRICO NO MONGODB ATLAS
 // =================================================================
+
+// Enviar mensagem para a IA (RAG + Gemini)
 router.post('/chat', chatController.enviarMensagem);
+
+// Listar histórico de conversas para a barra lateral
 router.get('/chats', chatController.listarConversas);
+
+// Obter uma conversa específica pelo ID
 router.get('/chats/:id', chatController.obterConversaPorId);
+
+// Excluir uma conversa salva
 router.delete('/chats/:id', chatController.excluirConversa);
 
 // =================================================================
-// 3. ROTAS DO FÓRUM (RAG BASE, RESPOSTAS & COMENTÁRIOS)
+// 3. ROTAS DO FÓRUM (PERGUNTAS, VOTAÇÃO E MODERAÇÃO)
 // =================================================================
+
+// Listar todas as postagens (com suporte a filtros: ?filtro=resolvido)
 router.get('/posts', async (req, res) => {
     try {
         const { filtro } = req.query;
@@ -115,20 +130,26 @@ router.get('/posts', async (req, res) => {
         const posts = await Post.find(query).sort({ createdAt: -1 });
         return res.json(posts);
     } catch (error) {
+        console.error("Erro ao buscar postagens:", error.message);
         return res.status(500).json({ error: "Erro ao buscar postagens." });
     }
 });
 
+// Obter detalhes de uma postagem com todas as respostas e comentários
 router.get('/posts/:id', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
-        if (!post) return res.status(404).json({ error: "Pergunta não encontrada." });
+        if (!post) {
+            return res.status(404).json({ error: "Pergunta não encontrada." });
+        }
         return res.json(post);
     } catch (error) {
+        console.error("Erro ao carregar dúvida:", error.message);
         return res.status(500).json({ error: "Erro ao carregar detalhes da dúvida." });
     }
 });
 
+// Publicar uma nova pergunta pública no fórum
 router.post('/posts', async (req, res) => {
     try {
         const { titulo, desc, tags, author } = req.body;
@@ -149,10 +170,12 @@ router.post('/posts', async (req, res) => {
         await novoPost.save();
         return res.status(201).json(novoPost);
     } catch (error) {
+        console.error("Erro ao criar postagem:", error.message);
         return res.status(500).json({ error: "Falha ao salvar postagem no banco." });
     }
 });
 
+// Votar positivamente em uma postagem (Incremento atômico)
 router.patch('/posts/:id/vote', async (req, res) => {
     try {
         const postAtualizado = await Post.findByIdAndUpdate(
@@ -160,13 +183,17 @@ router.patch('/posts/:id/vote', async (req, res) => {
             { $inc: { votos: 1 } },
             { new: true }
         );
-        if (!postAtualizado) return res.status(404).json({ error: "Postagem não encontrada." });
+        if (!postAtualizado) {
+            return res.status(404).json({ error: "Postagem não encontrada." });
+        }
         return res.json(postAtualizado);
     } catch (error) {
+        console.error("Erro ao votar:", error.message);
         return res.status(500).json({ error: "Não foi possível computar o voto." });
     }
 });
 
+// Excluir uma postagem do fórum
 router.delete('/posts/:id', async (req, res) => {
     try {
         const postExcluido = await Post.findByIdAndDelete(req.params.id);
@@ -175,11 +202,16 @@ router.delete('/posts/:id', async (req, res) => {
         }
         return res.json({ success: true, message: "Postagem excluída com sucesso." });
     } catch (error) {
+        console.error("Erro ao excluir postagem:", error.message);
         return res.status(500).json({ error: "Erro ao excluir postagem." });
     }
 });
 
-// Adicionar Resposta Humana à Pergunta
+// =================================================================
+// 4. ROTAS DE RESPOSTAS, COMENTÁRIOS E IA NO FÓRUM
+// =================================================================
+
+// Adicionar resposta humana de um usuário à dúvida
 router.post('/posts/:id/respostas', async (req, res) => {
     try {
         const { texto, autor, role } = req.body;
@@ -213,11 +245,12 @@ router.post('/posts/:id/respostas', async (req, res) => {
             post: post
         });
     } catch (error) {
+        console.error("Erro ao salvar resposta:", error.message);
         return res.status(500).json({ error: "Erro ao salvar a resposta no banco." });
     }
 });
 
-// Adicionar Comentário/Réplica em uma Resposta Específica
+// Adicionar comentário/réplica em uma resposta específica
 router.post('/posts/:postId/respostas/:respostaId/comentarios', async (req, res) => {
     try {
         const { texto, autor, role } = req.body;
@@ -255,12 +288,12 @@ router.post('/posts/:postId/respostas/:respostaId/comentarios', async (req, res)
             post: post
         });
     } catch (error) {
-        console.error("Erro ao adicionar comentário:", error);
+        console.error("Erro ao adicionar comentário:", error.message);
         return res.status(500).json({ error: "Erro ao salvar comentário no banco de dados." });
     }
 });
 
-// Gerar Resposta Automática da IA com Gemini
+// Gerar resposta técnica oficial da IA com Gemini para o tópico
 router.post('/posts/:id/gerar-resposta-ia', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -344,15 +377,18 @@ DIRETRIZES:
         });
 
     } catch (error) {
+        console.error("Erro ao gerar resposta com IA:", error.message);
         return res.status(500).json({ error: error.message || "Erro ao gerar resposta com IA." });
     }
 });
 
-// Marcar / Desmarcar Melhor Resposta
+// Marcar ou Desmarcar Melhor Resposta / Solução Aceita
 router.patch('/posts/:id/respostas/:respId/solucao', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
-        if (!post) return res.status(404).json({ error: "Pergunta não encontrada." });
+        if (!post) {
+            return res.status(404).json({ error: "Pergunta não encontrada." });
+        }
 
         let respostaEncontrada = false;
 
@@ -378,6 +414,7 @@ router.patch('/posts/:id/respostas/:respId/solucao', async (req, res) => {
             respostas: post.respostas
         });
     } catch (error) {
+        console.error("Erro ao definir melhor resposta:", error.message);
         return res.status(500).json({ error: "Erro ao definir melhor resposta." });
     }
 });

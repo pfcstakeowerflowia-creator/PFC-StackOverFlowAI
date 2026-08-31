@@ -17,19 +17,21 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Servir arquivos estáticos (CSS, imagens)
+// Servir frontend estático
 app.use(express.static(path.join(__dirname)));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Conectar ao MongoDB Atlas
+// Conexão direta com o MongoDB Atlas
 const mongoURI = process.env.MONGODB_URI;
 if (mongoURI) {
     mongoose.connect(mongoURI)
         .then(() => console.log("✅ Conectado ao MongoDB Atlas com sucesso!"))
         .catch(err => console.error("❌ Erro no MongoDB:", err.message));
+} else {
+    console.warn("⚠️ AVISO: MONGODB_URI não encontrada no arquivo .env!");
 }
 
 // Rotas da API
@@ -39,5 +41,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor Overflowia rodando em: http://localhost:${PORT}`);
 });
-
-module.exports = app;

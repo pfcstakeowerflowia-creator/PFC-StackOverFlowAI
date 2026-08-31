@@ -1,4 +1,3 @@
-// 1. Configuração de DNS para resolver o MongoDB Atlas
 const dns = require('dns');
 try {
     dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1', '1.0.0.1']);
@@ -14,26 +13,23 @@ const apiRoutes = require('./routes/chatRoutes');
 
 const app = express();
 
-// Middlewares
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Servir frontend estático
+// Servir arquivos estáticos (CSS, imagens)
 app.use(express.static(path.join(__dirname)));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Conexão com o MongoDB Atlas
+// Conectar ao MongoDB Atlas
 const mongoURI = process.env.MONGODB_URI;
 if (mongoURI) {
     mongoose.connect(mongoURI)
         .then(() => console.log("✅ Conectado ao MongoDB Atlas com sucesso!"))
         .catch(err => console.error("❌ Erro no MongoDB:", err.message));
-} else {
-    console.warn("⚠️ AVISO: MONGODB_URI não encontrada no .env!");
 }
 
 // Rotas da API

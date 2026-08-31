@@ -38,10 +38,12 @@ document.addEventListener("DOMContentLoaded", () => {
     let selectedFile = null;
     let currentChatId = null; // ID da conversa ativa no MongoDB Atlas
 
-    // Detecção dinâmica da URL da API (Local vs Produção no Render)
-   const BASE_API = (window.location.protocol === 'file:')
-    ? 'http://localhost:3000/api'
-    : '/api';
+    // 4. Detecção Inteligente da URL da API (Resolve porta 5500 do Live Server, 3000 e Produção)
+    const BASE_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
+        ? (window.location.port === '3000' ? '/api' : 'http://localhost:3000/api')
+        : '/api';
+
+    // Carregamento Inicial do Histórico vindo do MongoDB
     carregarHistoricoSidebar();
 
     // Controle do Menu Mobile
@@ -259,6 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!listContainer) return;
 
         try {
+            // Linha que agora busca corretamente no Node.js (porta 3000)
             const res = await fetch(`${BASE_API}/chats`);
             if (!res.ok) throw new Error("Erro ao buscar histórico");
             const chats = await res.json();

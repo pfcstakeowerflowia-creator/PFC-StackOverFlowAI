@@ -2,7 +2,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     renderizarPerfilLateral(isLoggedIn);
 
-   const BASE_API = (window.location.protocol === 'file:')
+   // Se estiver rodando no Live Server (5500) ou abrindo como arquivo, manda para o Node (3000).
+// Se estiver rodando direto no servidor ou no Render, usa '/api' relativo.
+const BASE_API = (window.location.port === '5500' || window.location.port === '5501' || window.location.protocol === 'file:')
     ? 'http://localhost:3000/api'
     : '/api';
 

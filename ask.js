@@ -44,10 +44,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             try {
                 // Endpoint relativo (funciona em localhost, Render e Vercel)
-                const URL_API = (window.location.protocol === 'file:')
-                    ? 'http://localhost:3000/api/posts'
-                    : '/api/posts';
-
+               const URL_API = (window.location.port === '5500' || window.location.port === '5501' || window.location.protocol === 'file:')
+    ? 'http://localhost:3000/api/posts'
+    : '/api/posts';
                 const response = await fetch(URL_API, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

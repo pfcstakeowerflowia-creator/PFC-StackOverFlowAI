@@ -43,10 +43,11 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             try {
-                const URL_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
-    ? 'http://localhost:3000/api/posts'
-    : 'https://pfc-stackoverflowai.onrender.com/api/posts';
-    
+                // Endpoint relativo (funciona em localhost, Render e Vercel)
+                const URL_API = (window.location.protocol === 'file:')
+                    ? 'http://localhost:3000/api/posts'
+                    : '/api/posts';
+
                 const response = await fetch(URL_API, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

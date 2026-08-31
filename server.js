@@ -8,7 +8,7 @@ const dns = require('dns');
 try {
     dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1', '1.0.0.1']);
 } catch (dnsErr) {
-    console.warn('⚠️ Não foi possível alterar os servidores DNS padrão:', dnsErr.message);
+    console.warn('⚠️ Não foi possível alterar servidores DNS:', dnsErr.message);
 }
 
 const fs = require('fs');
@@ -30,7 +30,7 @@ function carregarRotasSeguras() {
             }
         }
     } catch (err) {
-        console.warn('⚠️ Falha ao inspecionar diretório routes:', err.message);
+        console.warn('⚠️ Falha ao ler pasta routes:', err.message);
     }
     return require('./routes/chatRoutes');
 }
@@ -51,7 +51,6 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Limite de 50MB (suporta imagens em Base64 e códigos extensos)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
@@ -63,10 +62,10 @@ app.use((err, req, res, next) => {
     next();
 });
 
-// 4. Servir Arquivos Estáticos do Frontend (HTML, CSS, JS, Imagens)
-app.use(express.static(path.join(__dirname)));
+// 4. Servir Arquivos Estáticos com MIME types automáticos (CSS, JS, Imagens, HTML)
+app.use(express.static(__dirname, { index: false }));
 
-// 5. Rota Principal: Abre a Interface Visual do Site (index.html)
+// 5. Rota Principal: Entrega a página inicial formatada
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -130,14 +129,7 @@ if (apiRoutes) {
     });
 }
 
-// 9. Tratamento de Rotas Não Encontradas (404)
-app.use((req, res) => {
-    res.status(404).json({
-        error: `Rota não encontrada: ${req.method} ${req.originalUrl}`
-    });
-});
-
-// 10. Tratamento Centralizado de Erros Internos (500)
+// 9. Tratamento Centralizado de Erros Internos (500)
 app.use((err, req, res, next) => {
     console.error("❌ Erro interno do servidor:", err.stack);
     res.status(500).json({
@@ -146,13 +138,13 @@ app.use((err, req, res, next) => {
     });
 });
 
-// 11. Inicialização do Servidor HTTP
+// 10. Inicialização do Servidor HTTP
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor Overflowia.AI operacional na porta ${PORT}`);
 });
 
-// 12. Encerramento Gracioso (Graceful Shutdown)
+// 11. Encerramento Gracioso (Graceful Shutdown)
 const finalizarProcesso = (sinal) => {
     console.log(`\n🛑 Recebido sinal ${sinal}. Finalizando conexões de forma segura...`);
     server.close(async () => {
@@ -175,7 +167,7 @@ const finalizarProcesso = (sinal) => {
 process.on('SIGTERM', () => finalizarProcesso('SIGTERM'));
 process.on('SIGINT', () => finalizarProcesso('SIGINT'));
 
-// 13. Proteção Global contra Travamentos Inesperados
+// 12. Proteção Global contra Travamentos Inesperados
 process.on('unhandledRejection', (reason, promise) => {
     console.error('⚠️ [Aviso de Rejeição Não Tratada]:', reason);
 });
@@ -184,5 +176,5 @@ process.on('uncaughtException', (error) => {
     console.error('⚠️ [Exceção Não Capturada]:', error);
 });
 
-// Exporta a instância do Express (Essencial para Serverless / Vercel)
+// Exporta a instância do Express (Essencial para Vercel e Serverless)
 module.exports = app;

@@ -39,11 +39,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentChatId = null; // ID da conversa ativa no MongoDB Atlas
 
     // Detecção dinâmica da URL da API (Local vs Produção no Render)
-    const BASE_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
-        ? 'http://localhost:3000/api'
-        : 'https://pfc-stackoverflowai.onrender.com/api';
-
-    // 4. Carregamento Inicial do Histórico vindo do MongoDB
+   const BASE_API = (window.location.protocol === 'file:')
+    ? 'http://localhost:3000/api'
+    : '/api';
     carregarHistoricoSidebar();
 
     // Controle do Menu Mobile

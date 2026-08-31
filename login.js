@@ -11,10 +11,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectRole = document.getElementById('reg-role');
     const groupAdminCode = document.getElementById('group-admin-code');
 
-    const BASE_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
-        ? 'http://localhost:3000/api'
-        : 'https://pfc-stackoverflowai.onrender.com/api';
-
+   const BASE_API = (window.location.protocol === 'file:')
+    ? 'http://localhost:3000/api'
+    : '/api';
     // Alternar Abas (Entrar vs Criar Conta)
     tabLogin.addEventListener('click', () => {
         tabLogin.style.color = 'var(--accent-color)';

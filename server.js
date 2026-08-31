@@ -3,7 +3,7 @@
 // Projeto Final de Curso — IFPR Campus Assis Chateaubriand
 // =================================================================
 
-// 1. Configuração de DNS (Resolve ECONNREFUSED com SRV no Windows/Linux)
+// 1. Configuração de DNS (Resolve ECONNREFUSED do MongoDB Atlas no Windows/Linux)
 const dns = require('dns');
 try {
     dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1', '1.0.0.1']);
@@ -32,7 +32,6 @@ function carregarRotasSeguras() {
     } catch (err) {
         console.warn('⚠️ Falha ao inspecionar diretório routes:', err.message);
     }
-    // Fallback relativo padrão
     return require('./routes/chatRoutes');
 }
 
@@ -52,7 +51,7 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Limite aumentado para 50MB (permite imagens em Base64 e códigos extensos)
+// Limite de 50MB (suporta imagens em Base64 e códigos extensos)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
@@ -64,8 +63,16 @@ app.use((err, req, res, next) => {
     next();
 });
 
-// 4. Endpoints de Diagnóstico e Health Check (Render e Monitoramento)
+// 4. Servir Arquivos Estáticos do Frontend (HTML, CSS, JS, Imagens)
+app.use(express.static(path.join(__dirname)));
+
+// 5. Rota Principal: Abre a Interface Visual do Site (index.html)
 app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// 6. Endpoints de Diagnóstico e Health Check da API
+app.get('/api/status', (req, res) => {
     res.status(200).json({
         projeto: "Overflowia.AI",
         status: "online",
@@ -84,14 +91,14 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// 5. Conexão Resiliente com o MongoDB Atlas
+// 7. Conexão Resiliente com o MongoDB Atlas
 const mongoURI = process.env.MONGODB_URI;
 
 if (!mongoURI) {
     console.error("❌ ERRO FATAL: A variável MONGODB_URI não foi definida nas variáveis de ambiente!");
 } else {
     mongoose.connect(mongoURI, {
-        serverSelectionTimeoutMS: 10000, // Timeout de 10s para não prender o boot
+        serverSelectionTimeoutMS: 10000,
         socketTimeoutMS: 45000,
     })
     .then(() => {
@@ -101,7 +108,6 @@ if (!mongoURI) {
         console.error("❌ Falha na conexão inicial com o MongoDB:", err.message);
     });
 
-    // Monitoramento contínuo da conexão
     mongoose.connection.on('disconnected', () => {
         console.warn('⚠️ Alerta: Conexão com o MongoDB perdida. Aguardando reconexão...');
     });
@@ -115,7 +121,7 @@ if (!mongoURI) {
     });
 }
 
-// 6. Registro das Rotas da Aplicação
+// 8. Registro das Rotas REST da Aplicação com prefixo /api
 if (apiRoutes) {
     app.use('/api', apiRoutes);
 } else {
@@ -124,14 +130,14 @@ if (apiRoutes) {
     });
 }
 
-// 7. Tratamento de Rotas Não Encontradas (404)
+// 9. Tratamento de Rotas Não Encontradas (404)
 app.use((req, res) => {
     res.status(404).json({
         error: `Rota não encontrada: ${req.method} ${req.originalUrl}`
     });
 });
 
-// 8. Tratamento Centralizado de Erros Internos (500)
+// 10. Tratamento Centralizado de Erros Internos (500)
 app.use((err, req, res, next) => {
     console.error("❌ Erro interno do servidor:", err.stack);
     res.status(500).json({
@@ -140,13 +146,13 @@ app.use((err, req, res, next) => {
     });
 });
 
-// 9. Inicialização do Servidor HTTP
+// 11. Inicialização do Servidor HTTP
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor Overflowia.AI operacional na porta ${PORT}`);
 });
 
-// 10. Encerramento Gracioso (Graceful Shutdown para Render e SIGINT)
+// 12. Encerramento Gracioso (Graceful Shutdown)
 const finalizarProcesso = (sinal) => {
     console.log(`\n🛑 Recebido sinal ${sinal}. Finalizando conexões de forma segura...`);
     server.close(async () => {
@@ -160,7 +166,6 @@ const finalizarProcesso = (sinal) => {
         process.exit(0);
     });
 
-    // Força saída após 10 segundos se houver conexões presas
     setTimeout(() => {
         console.error('⚠️ Forçando encerramento imediato por timeout.');
         process.exit(1);
@@ -170,7 +175,7 @@ const finalizarProcesso = (sinal) => {
 process.on('SIGTERM', () => finalizarProcesso('SIGTERM'));
 process.on('SIGINT', () => finalizarProcesso('SIGINT'));
 
-// 11. Proteção Global contra Travamentos Inesperados
+// 13. Proteção Global contra Travamentos Inesperados
 process.on('unhandledRejection', (reason, promise) => {
     console.error('⚠️ [Aviso de Rejeição Não Tratada]:', reason);
 });
@@ -178,3 +183,6 @@ process.on('unhandledRejection', (reason, promise) => {
 process.on('uncaughtException', (error) => {
     console.error('⚠️ [Exceção Não Capturada]:', error);
 });
+
+// Exporta a instância do Express (Essencial para Serverless / Vercel)
+module.exports = app;

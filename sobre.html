@@ -5,26 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sobre o Projeto - Overflowia.AI</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="forum.css">
+    <link rel="stylesheet" href="sobre.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- LINK DE SALTO (Acessibilidade) -->
-  
-
     <div class="app-layout">
         
         <!-- SIDEBAR DE NAVEGAÇÃO -->
         <aside class="side-panel" role="navigation" aria-label="Menu Lateral">
             <div class="brand">
-                <div class="brand-icon" aria-hidden="true"><i class="fas fa-brain"></i></div>
-                <h2>Overflowia.AI</h2>
+                <div class="brand-wrapper">
+                    <div class="brand-icon" aria-hidden="true"><i class="fas fa-brain"></i></div>
+                    <h2>Overflowia.AI</h2>
+                </div>
+                <button id="btn-close-sidebar" class="btn-close-sidebar" aria-label="Fechar menu lateral">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             
-            <!-- Ferramenta de Acessibilidade: Alto Contraste -->
+            <!-- Ferramenta de Acessibilidade -->
             <div class="accessibility-tools" style="margin-bottom: 20px; padding: 10px; border-bottom: 1px solid var(--border-color);">
-                <button id="toggle-contrast" class="nav-btn secondary-btn" style="width: 100%;" aria-label="Ativar Alto Contraste">
+                <button id="toggle-contrast" class="nav-btn secondary-btn" style="width: 100%; justify-content: center;" aria-label="Ativar Alto Contraste">
                     <i class="fas fa-adjust" aria-hidden="true"></i> Alto Contraste
                 </button>
             </div>
@@ -40,90 +42,114 @@
 
         <!-- CONTEÚDO PRINCIPAL INSTITUCIONAL -->
         <main class="chat-container" id="main-content" role="main">
-            <header class="forum-header">
-                <div>
-                    <h1>Transparência, Tecnologia e Impacto Social</h1>
-                    <p class="subtitle">Conheça os autores, a fundamentação acadêmica e o ecossistema inclusivo do Overflowia.AI.</p>
+            <header class="top-bar" style="height: auto; padding: 20px 30px;">
+                <div class="header-left">
+                    <button id="btn-open-sidebar" class="mobile-menu-btn" aria-label="Abrir menu lateral">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h1 style="font-size: 20px; font-weight: 700;">Transparência, Tecnologia e Impacto Social</h1>
+                        <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Conheça os autores, a fundamentação acadêmica e o ecossistema inclusivo do Overflowia.AI.</p>
+                    </div>
                 </div>
             </header>
 
-            <div class="ask-container">
+            <div class="sobre-container">
                 
                 <!-- SEÇÃO 1: AUTORES E PROJETO ACADÊMICO (IFPR) -->
-                <article class="form-card">
+                <article class="sobre-card">
                     <header>
-                        <h2 style="color: var(--accent-color); margin-bottom: 15px; font-size: 18px;">
-                            <i class="fas fa-graduation-cap" aria-hidden="true"></i> Autores e Origem Institucional
+                        <h2 class="titulo-autores">
+                            <i class="fas fa-graduation-cap"></i> Autores e Origem Institucional
                         </h2>
                     </header>
-                    <p style="line-height: 1.6; color: var(--text-primary);">
+                    <p class="sobre-texto">
                         O <strong>Overflowia.AI</strong> é um Projeto Final de Curso (PFC) desenvolvido no <strong>IFPR – Instituto Federal do Paraná (Campus Assis Chateaubriand)</strong>. O sistema combina uma plataforma colaborativa de dúvidas de programação com Inteligência Artificial baseada na arquitetura <strong>RAG (Retrieval-Augmented Generation)</strong>.
                     </p>
                     
-                    <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div class="ai-feature-box">
-                            <p><strong>Nicolas Chambo Amaral Calisto</strong><br><small style="color: var(--text-secondary);">Desenvolvedor Full-Stack</small></p>
+                    <div class="autores-grid">
+                        <div class="autor-item">
+                            <div class="autor-avatar"><i class="fas fa-user-code"></i></div>
+                            <div class="autor-info">
+                                <strong>Nicolas Chambo Amaral Calisto</strong>
+                                <span>Desenvolvedor Full-Stack</span>
+                            </div>
                         </div>
-                        <div class="ai-feature-box">
-                            <p><strong>Bruno Cortarelli Graciano</strong><br><small style="color: var(--text-secondary);">Desenvolvedor Full-Stack</small></p>
+                        <div class="autor-item">
+                            <div class="autor-avatar"><i class="fas fa-user-code"></i></div>
+                            <div class="autor-info">
+                                <strong>Bruno Cortarelli Graciano</strong>
+                                <span>Desenvolvedor Full-Stack</span>
+                            </div>
                         </div>
-                        <div class="ai-feature-box">
-                            <p><strong>Eduardo José de Lima Dmengeon</strong><br><small style="color: var(--text-secondary);">Desenvolvedor Full-Stack</small></p>
+                        <div class="autor-item">
+                            <div class="autor-avatar"><i class="fas fa-user-code"></i></div>
+                            <div class="autor-info">
+                                <strong>Eduardo José de Lima Dmengeon</strong>
+                                <span>Desenvolvedor Full-Stack</span>
+                            </div>
                         </div>
-                        <div class="ai-feature-box">
-                            <p><strong>Vinicius Yuji Miaki</strong><br><small style="color: var(--text-secondary);">Desenvolvedor Full-Stack</small></p>
+                        <div class="autor-item">
+                            <div class="autor-avatar"><i class="fas fa-user-code"></i></div>
+                            <div class="autor-info">
+                                <strong>Vinicius Yuji Miaki</strong>
+                                <span>Desenvolvedor Full-Stack</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div style="margin-top: 15px; padding: 12px 15px; background: rgba(123, 97, 255, 0.08); border-radius: 8px; border: 1px solid var(--accent-color);">
-                        <p style="font-size: 13px; margin: 0; color: var(--text-primary);">
-                            <i class="fas fa-chalkboard-teacher text-green" aria-hidden="true"></i> <strong>Orientação Acadêmica:</strong> Prof. Vagner Simões Santos
-                        </p>
+                    <div class="orientador-box">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        <p><strong>Orientação Acadêmica:</strong> Prof. Vagner Simões Santos</p>
                     </div>
                 </article>
 
                 <!-- SEÇÃO 2: COMPROMISSO COM OS ODS DA ONU -->
-                <article class="form-card">
+                <article class="sobre-card">
                     <header>
-                        <h2 style="color: #4ade80; margin-bottom: 15px; font-size: 18px;">
-                            <i class="fas fa-globe-americas" aria-hidden="true"></i> Compromisso com os Objetivos de Desenvolvimento Sustentável (ONU)
+                        <h2 class="titulo-ods">
+                            <i class="fas fa-globe-americas"></i> Compromisso com os Objetivos de Desenvolvimento Sustentável (ONU)
                         </h2>
                     </header>
-                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                        <section style="flex: 1; min-width: 260px; background: rgba(74, 222, 128, 0.05); padding: 18px; border-radius: 8px; border: 1px solid rgba(74, 222, 128, 0.2);">
-                            <h3 style="color: #4ade80; font-size: 15px; margin-bottom: 8px;">
-                                <i class="fas fa-book-reader" aria-hidden="true"></i> ODS 4 — Educação de Qualidade
-                            </h3>
-                            <p style="font-size: 13px; line-height: 1.5; color: var(--text-primary); margin: 0;">
-                                Democratizar o aprendizado técnico de programação através de um assistente de IA didático integrado com a base de conhecimento do fórum estudantil.
-                            </p>
+                    <div class="ods-container">
+                        <section class="ods-box ods-4">
+                            <h3><i class="fas fa-book-reader"></i> ODS 4 — Educação de Qualidade</h3>
+                            <p>Democratizar o aprendizado técnico de programação através de um assistente de IA didático integrado com a base de conhecimento do fórum estudantil.</p>
                         </section>
                         
-                        <section style="flex: 1; min-width: 260px; background: rgba(0, 210, 211, 0.05); padding: 18px; border-radius: 8px; border: 1px solid rgba(0, 210, 211, 0.2);">
-                            <h3 style="color: var(--bot-color); font-size: 15px; margin-bottom: 8px;">
-                                <i class="fas fa-hands-helping" aria-hidden="true"></i> ODS 10 — Redução das Desigualdades
-                            </h3>
-                            <p style="font-size: 13px; line-height: 1.5; color: var(--text-primary); margin: 0;">
-                                Garantir que qualquer estudante, independentemente de sua condição visual ou socioeconômica, tenha acesso gratuito e acessível às melhores ferramentas de computação.
-                            </p>
+                        <section class="ods-box ods-10">
+                            <h3><i class="fas fa-hands-helping"></i> ODS 10 — Redução das Desigualdades</h3>
+                            <p>Garantir que qualquer estudante, independentemente de sua condição visual ou socioeconômica, tenha acesso gratuito e acessível às melhores ferramentas de computação.</p>
                         </section>
                     </div>
                 </article>
 
                 <!-- SEÇÃO 3: ACESSIBILIDADE E ARQUITETURA DE SOFTWARE -->
-                <article class="form-card">
+                <article class="sobre-card">
                     <header>
-                        <h2 style="color: var(--bot-color); margin-bottom: 15px; font-size: 18px;">
-                            <i class="fas fa-universal-access" aria-hidden="true"></i> Engenharia de Acessibilidade (WCAG AAA)
+                        <h2 class="titulo-acessibilidade">
+                            <i class="fas fa-universal-access"></i> Engenharia de Acessibilidade (WCAG AAA)
                         </h2>
                     </header>
-                    <p style="margin-bottom: 15px; line-height: 1.5;">A interface foi projetada para garantir compatibilidade plena com tecnologias assistivas e leitores de tela como <strong>NVDA, JAWS e VoiceOver</strong>:</p>
+                    <p class="sobre-texto">A interface foi projetada para garantir compatibilidade plena com tecnologias assistivas e leitores de tela como <strong>NVDA, JAWS e VoiceOver</strong>:</p>
                     
-                    <ul style="list-style: none; padding: 0; display: grid; gap: 12px; font-size: 14px;">
-                        <li><i class="fas fa-check-circle text-green" aria-hidden="true"></i> <strong>HTML5 Semântico:</strong> Uso estrito de tags de navegação estruturada (<code>&lt;main&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;aside&gt;</code>, <code>&lt;article&gt;</code>).</li>
-                        <li><i class="fas fa-check-circle text-green" aria-hidden="true"></i> <strong>Live Regions (ARIA):</strong> Uso de <code>aria-live="polite"</code> para anunciar mensagens da IA em tempo real aos deficientes visuais.</li>
-                        <li><i class="fas fa-check-circle text-green" aria-hidden="true"></i> <strong>Alto Contraste WCAG AAA:</strong> Paleta com preto puro (<code>#000000</code>), texto em amarelo de alto contraste (<code>#ffff00</code>) e contorno de foco em vermelho.</li>
-                        <li><i class="fas fa-check-circle text-green" aria-hidden="true"></i> <strong>Persistência em Nuvem:</strong> Banco de dados <strong>MongoDB Atlas</strong> para armazenar postagens do fórum e histórico de conversas.</li>
+                    <ul class="acessibilidade-lista">
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div><strong>HTML5 Semântico:</strong> Uso estrito de tags de navegação estruturada (<code>&lt;main&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;aside&gt;</code>, <code>&lt;article&gt;</code>).</div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div><strong>Live Regions (ARIA):</strong> Uso de <code>aria-live="polite"</code> para anunciar mensagens da IA em tempo real aos deficientes visuais.</div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div><strong>Alto Contraste WCAG AAA:</strong> Paleta com preto puro (<code>#000000</code>), texto em amarelo de alto contraste (<code>#ffff00</code>) e contorno de foco em vermelho.</div>
+                        </li>
+                        <li>
+                            <i class="fas fa-check-circle"></i>
+                            <div><strong>Persistência em Nuvem:</strong> Banco de dados <strong>MongoDB Atlas</strong> para armazenar postagens do fórum e histórico de conversas.</div>
+                        </li>
                     </ul>
                 </article>
             </div>
@@ -134,24 +160,33 @@
         </main>
     </div>
 
-    <!-- Script de autenticação e acessibilidade -->
-    <script src="forum.js"></script>
-
-    <!-- Script de Alto Contraste -->
+    <!-- Script de autenticação e menu mobile -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const btnContrast = document.getElementById('toggle-contrast');
-            
             if (localStorage.getItem('highContrast') === 'true') {
                 document.body.classList.add('high-contrast');
             }
-
             if (btnContrast) {
                 btnContrast.addEventListener('click', () => {
                     const isEnabled = document.body.classList.toggle('high-contrast');
                     localStorage.setItem('highContrast', isEnabled);
                 });
             }
+
+            const openBtn = document.getElementById('btn-open-sidebar');
+            const closeBtn = document.getElementById('btn-close-sidebar');
+            const sidebar = document.querySelector('.side-panel');
+            const overlay = document.querySelector('.sidebar-overlay');
+
+            function toggleSidebar(open) {
+                if (sidebar) sidebar.classList.toggle('open', open);
+                if (overlay) overlay.classList.toggle('active', open);
+            }
+
+            if (openBtn) openBtn.addEventListener('click', () => toggleSidebar(true));
+            if (closeBtn) closeBtn.addEventListener('click', () => toggleSidebar(false));
+            if (overlay) overlay.addEventListener('click', () => toggleSidebar(false));
         });
     </script>
 </body>

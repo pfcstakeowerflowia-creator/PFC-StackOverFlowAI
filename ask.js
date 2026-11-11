@@ -43,16 +43,18 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             try {
-                // Endpoint relativo (funciona em localhost, Render e Vercel)
-               const URL_API = (window.location.port === '5500' || window.location.port === '5501' || window.location.protocol === 'file:')
-    ? 'http://localhost:3000/api/posts'
-    : '/api/posts';
-                const response = await fetch(URL_API, {
+                // Rota que funciona em Localhost, Netlify e Render
+                const BASE_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
+                    ? (window.location.port === '3000' ? '/api' : 'http://localhost:3000/api')
+                    : (window.location.hostname.includes('netlify.app') 
+                        ? 'https://pfc-stackoverflowai.onrender.com/api' 
+                        : '/api');
+
+                const response = await fetch(`${BASE_API}/posts`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(novoPost)
                 });
-
                 if (response.ok) {
                     alert("✅ Pergunta publicada e indexada com sucesso na base RAG!");
                     window.location.href = 'forum.html';

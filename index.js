@@ -38,18 +38,13 @@ document.addEventListener("DOMContentLoaded", () => {
     let selectedFile = null;
     let currentChatId = null;
 
-    // 4. Detecção Inteligente de Rota (Funciona em localhost:3000, porta 5500 e Vercel)
+    // 4. Detecção Inteligente de Rota (Funciona em localhost:3000, porta 5500 e servidores em nuvem)
+    // Detecção Inteligente de Rota (Localhost, Netlify ou Render)
     const BASE_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
         ? (window.location.port === '3000' ? '/api' : 'http://localhost:3000/api')
-        : '/api';
-
-    // Carregamento Inicial do Histórico vindo do MongoDB
-    carregarHistoricoSidebar();
-
-    function toggleSidebar(open) {
-        if (sidebar) sidebar.classList.toggle('open', open);
-        if (overlay) overlay.classList.toggle('active', open);
-    }
+        : (window.location.hostname.includes('netlify.app') 
+            ? 'https://pfc-stackoverflowai.onrender.com/api' 
+            : '/api');
 
     if (openSidebarBtn) openSidebarBtn.addEventListener('click', () => toggleSidebar(true));
     if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', () => toggleSidebar(false));
@@ -110,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 5. Envio de Mensagens
+    // 5. Envio de Mensagens e Comunicação com o RAG
     if (chatInputBtn && chatTextArea && msgArea) {
         chatInputBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -206,6 +201,29 @@ document.addEventListener("DOMContentLoaded", () => {
                     carregarHistoricoSidebar();
                 }
 
+                // --- MONTAGEM DO CARD VISUAL DE FONTES DO RAG ---
+                let fontesHTML = '';
+                if (data.fontesConsultadas && data.fontesConsultadas.length > 0) {
+                    fontesHTML = `
+                    <div class="rag-sources-card">
+                        <div class="rag-sources-header">
+                            <i class="fas fa-database"></i>
+                            <span>Conhecimento recuperado do fórum da comunidade (RAG):</span>
+                        </div>
+                        <ul class="rag-sources-list">
+                            ${data.fontesConsultadas.map(f => `
+                                <li>
+                                    <i class="fas fa-comment-alt"></i>
+                                    <strong>"${escaparHTML(f.titulo)}"</strong>
+                                    <span class="rag-status-badge ${f.statusResolvido ? 'resolved' : 'open'}">
+                                        ${f.statusResolvido ? 'Resolvido ✓' : 'Em aberto'}
+                                    </span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>`;
+                }
+
                 const rawHTML = marked.parse(data.resposta || "Nenhuma resposta retornada.");
                 const cleanHTML = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(rawHTML) : rawHTML;
 
@@ -213,6 +231,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <article class="message ai-message">
                     <div class="avatar-ai"><i class="fas fa-robot"></i></div>
                     <div class="message-content">
+                        ${fontesHTML}
                         ${cleanHTML}
                     </div>
                 </article>`);
@@ -244,7 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // 6. Histórico MongoDB
+    // 6. Histórico MongoDB no Menu Lateral
     async function carregarHistoricoSidebar() {
         const listContainer = document.getElementById('chat-history-list');
         if (!listContainer) return;
@@ -379,6 +398,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+// Funções Utilitárias Globais
 function adicionarBotaoCopiar(codeBlock) {
     const pre = codeBlock.parentElement;
     if (pre && !pre.querySelector('.copy-code-btn')) {

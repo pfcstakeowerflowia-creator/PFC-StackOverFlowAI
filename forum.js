@@ -4,9 +4,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
    // Se estiver rodando no Live Server (5500) ou abrindo como arquivo, manda para o Node (3000).
 // Se estiver rodando direto no servidor ou no Render, usa '/api' relativo.
-const BASE_API = (window.location.port === '5500' || window.location.port === '5501' || window.location.protocol === 'file:')
-    ? 'http://localhost:3000/api'
-    : '/api';
+const BASE_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
+    ? (window.location.port === '3000' ? '/api' : 'http://localhost:3000/api')
+    : (window.location.hostname.includes('netlify.app') 
+        ? 'https://pfc-stackoverflowai.onrender.com/api' 
+        : '/api');
 
     const feedView = document.getElementById('forum-feed-view');
     const threadView = document.getElementById('forum-thread-view');
@@ -553,11 +555,7 @@ window.excluirPost = async function(id) {
     if (!confirm("Tem certeza de que deseja apagar esta pergunta do fórum?")) return;
 
     try {
-        const URL_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
-            ? `http://localhost:3000/api/posts/${id}`
-            : `https://pfc-stackoverflowai.onrender.com/api/posts/${id}`;
-
-        const res = await fetch(URL_API, { method: 'DELETE' });
+        const res = await fetch(`${BASE_API}/posts/${id}`, { method: 'DELETE' });
 
         if (res.ok) {
             const card = document.getElementById(`card-${id}`);
@@ -570,6 +568,33 @@ window.excluirPost = async function(id) {
         }
     } catch (error) {
         console.error("Erro ao excluir post:", error);
+    }
+};
+
+window.votar = async function(id, btnElement) {
+    try {
+        if (btnElement && btnElement.classList.contains('voted')) return;
+
+        const res = await fetch(`${BASE_API}/posts/${id}/vote`, { method: 'PATCH' });
+        if (res.ok) {
+            const data = await res.json();
+            const contador = document.getElementById(`vote-${id}`);
+            if (contador) {
+                contador.innerText = data.votos;
+                contador.style.color = '#00d2d3';
+            }
+            const qVotes = document.getElementById('so-question-votes');
+            if (qVotes) {
+                qVotes.innerText = data.votos;
+            }
+            if (btnElement) {
+                btnElement.classList.add('voted');
+                btnElement.style.color = '#00d2d3';
+                btnElement.style.transform = 'scale(1.2)';
+            }
+        }
+    } catch (error) {
+        console.error("Erro ao computar voto:", error);
     }
 };
 

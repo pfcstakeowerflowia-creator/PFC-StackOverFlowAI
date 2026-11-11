@@ -786,3 +786,78 @@ body.high-contrast .copy-code-btn {
     color: #ffff00 !important;
     border: 1px solid #ffff00 !important;
 }
+
+/* ===================================================
+   CARD VISUAL DE FONTES DO RAG (OVERFLOWIA.AI)
+   =================================================== */
+.rag-sources-card {
+    background: rgba(0, 210, 211, 0.05);
+    border: 1px solid rgba(0, 210, 211, 0.28);
+    border-left: 3px solid var(--bot-color);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+}
+
+.rag-sources-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--bot-color);
+    margin-bottom: 6px;
+}
+
+.rag-sources-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.rag-sources-list li {
+    font-size: 12.5px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.rag-sources-list li i {
+    font-size: 10px;
+    color: var(--text-secondary);
+}
+
+.rag-status-badge {
+    font-size: 10.5px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.rag-status-badge.resolved {
+    background: rgba(74, 222, 128, 0.15);
+    color: var(--success-color);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.rag-status-badge.open {
+    background: rgba(244, 128, 36, 0.15);
+    color: #f48024;
+    border: 1px solid rgba(244, 128, 36, 0.3);
+}
+
+/* Suporte para Alto Contraste WCAG AAA */
+body.high-contrast .rag-sources-card {
+    background: #000000 !important;
+    border: 2px solid #00ffff !important;
+}
+
+body.high-contrast .rag-sources-header,
+body.high-contrast .rag-sources-list li {
+    color: #ffffff !important;
+}

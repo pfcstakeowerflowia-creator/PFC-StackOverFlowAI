@@ -11,9 +11,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectRole = document.getElementById('reg-role');
     const groupAdminCode = document.getElementById('group-admin-code');
 
-   const BASE_API = (window.location.protocol === 'file:')
-    ? 'http://localhost:3000/api'
-    : '/api';
+    // Rota Inteligente: Envia para o Node (localhost:3000 ou Render)
+    const BASE_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
+        ? (window.location.port === '3000' ? '/api' : 'http://localhost:3000/api')
+        : (window.location.hostname.includes('netlify.app')
+            ? 'https://pfc-stackoverflowai.onrender.com/api'
+            : '/api');
+
     // Alternar Abas (Entrar vs Criar Conta)
     tabLogin.addEventListener('click', () => {
         tabLogin.style.color = 'var(--accent-color)';
@@ -102,6 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 btn.innerHTML = '<span>Entrar no Sistema</span> <i class="fas fa-arrow-right"></i>';
             }
         } catch (err) {
+            console.error("Erro no login:", err);
             mostrarAlerta("Erro de conexão com o servidor.");
             btn.disabled = false;
             btn.innerHTML = '<span>Entrar no Sistema</span> <i class="fas fa-arrow-right"></i>';
@@ -148,6 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 btn.innerHTML = '<span>Finalizar Cadastro</span> <i class="fas fa-user-plus"></i>';
             }
         } catch (err) {
+            console.error("Erro no cadastro:", err);
             mostrarAlerta("Erro de conexão ao cadastrar.");
             btn.disabled = false;
             btn.innerHTML = '<span>Finalizar Cadastro</span> <i class="fas fa-user-plus"></i>';

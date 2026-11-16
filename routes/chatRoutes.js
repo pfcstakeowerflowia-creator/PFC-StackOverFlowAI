@@ -8,6 +8,24 @@ const chatController = require('../controllers/chatController');
 const Post = require('../models/Post');
 const User = require('../models/User');
 
+// Função auxiliar para gerar embedding vetorial de forma segura
+async function gerarVetorTexto(texto) {
+    try {
+        const rawKey = process.env.GEMINI_API_KEY || process.env.API_KEY || process.env.GOOGLE_API_KEY || '';
+        const apiKey = rawKey.trim().replace(/^["']|["']$/g, '');
+
+        if (!apiKey) return [];
+
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+        const resultado = await model.embedContent(texto);
+        return resultado.embedding.values || [];
+    } catch (err) {
+        console.warn("⚠️ Aviso: Falha ao gerar embedding para a postagem:", err.message);
+        return [];
+    }
+}
+
 // =================================================================
 // 1. ROTAS DE AUTENTICAÇÃO NO MONGODB ATLAS
 // =================================================================
@@ -28,7 +46,8 @@ router.post('/auth/register', async (req, res) => {
 
         let roleFinal = 'aluno';
         if (role === 'admin') {
-            if (adminCode === 'admin2026' || adminCode === 'ifpr2026') {
+            const codigoValido = process.env.ADMIN_CODE || 'admin2026';
+            if (adminCode === codigoValido || adminCode === 'ifpr2026') {
                 roleFinal = 'admin';
             } else {
                 return res.status(403).json({ error: "Código de autorização de Administrador inválido." });
@@ -104,7 +123,7 @@ router.post('/auth/login', async (req, res) => {
 // 2. ROTAS DO CHAT COM IA E HISTÓRICO NO MONGODB ATLAS
 // =================================================================
 
-// Enviar mensagem para a IA (RAG + Gemini)
+// Enviar mensagem para a IA (RAG Híbrido + Gemini)
 router.post('/chat', chatController.enviarMensagem);
 
 // Listar histórico de conversas para a barra lateral
@@ -149,13 +168,17 @@ router.get('/posts/:id', async (req, res) => {
     }
 });
 
-// Publicar uma nova pergunta pública no fórum
+// Publicar uma nova pergunta pública no fórum (COM VETORIZAÇÃO RAG AUTOMÁTICA)
 router.post('/posts', async (req, res) => {
     try {
         const { titulo, desc, tags, author } = req.body;
         if (!titulo || !desc) {
             return res.status(400).json({ error: "Título e descrição são obrigatórios." });
         }
+
+        // 🧠 Gera o vetor semântico (768 dimensões) para o RAG Híbrido
+        const textoParaVetor = `${titulo.trim()} - ${desc.trim()}`;
+        const embeddingVetor = await gerarVetorTexto(textoParaVetor);
 
         const novoPost = new Post({
             titulo: titulo.trim(),
@@ -164,10 +187,12 @@ router.post('/posts', async (req, res) => {
             author: author || "Aluno PFC Logado",
             votos: 0,
             statusResolvido: false,
-            respostas: []
+            respostas: [],
+            embedding: embeddingVetor // Vetor salvo no documento do MongoDB Atlas
         });
 
         await novoPost.save();
+        console.log(`📌 Post publicado! Vetor RAG: ${embeddingVetor.length > 0 ? '768 dimensões geradas ✓' : 'Salvo sem vetor (fallback léxico)'}`);
         return res.status(201).json(novoPost);
     } catch (error) {
         console.error("Erro ao criar postagem:", error.message);
@@ -382,7 +407,7 @@ DIRETRIZES:
     }
 });
 
-// Marcar ou Desmarcar Melhor Resposta / Solução Aceita
+// Marcar ou Desmarcar Melhor Resposta / Solução Aceita (ATUALIZAÇÃO DE EMBEDDING ENRIQUECIDO)
 router.patch('/posts/:id/respostas/:respId/solucao', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -391,11 +416,15 @@ router.patch('/posts/:id/respostas/:respId/solucao', async (req, res) => {
         }
 
         let respostaEncontrada = false;
+        let textoMelhorSolucao = '';
 
         post.respostas.forEach(r => {
             if (r._id.toString() === req.params.respId) {
                 r.isMelhorResposta = !r.isMelhorResposta;
                 respostaEncontrada = true;
+                if (r.isMelhorResposta) {
+                    textoMelhorSolucao = r.texto;
+                }
             } else {
                 r.isMelhorResposta = false;
             }
@@ -406,6 +435,21 @@ router.patch('/posts/:id/respostas/:respId/solucao', async (req, res) => {
         }
 
         post.statusResolvido = post.respostas.some(r => r.isMelhorResposta);
+
+        // 🧠 Se foi marcada como solução aprovada, re-vetoriza o post incluindo a solução aprovada
+        if (post.statusResolvido && textoMelhorSolucao) {
+            try {
+                const textoCompleto = `${post.titulo} - ${post.desc} - Solução: ${textoMelhorSolucao}`;
+                const novoVetor = await gerarVetorTexto(textoCompleto);
+                if (novoVetor.length > 0) {
+                    post.embedding = novoVetor;
+                    console.log(`📌 Post [${post.titulo}] re-vetorizado com a Solução Aprovada.`);
+                }
+            } catch (vErr) {
+                console.warn("⚠️ Não foi possível re-vetorizar com a solução:", vErr.message);
+            }
+        }
+
         await post.save();
 
         return res.json({

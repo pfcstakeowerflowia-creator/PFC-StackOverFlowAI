@@ -89,12 +89,23 @@ const PostSchema = new mongoose.Schema({
         default: false
     },
     respostas: [RespostaSchema],
+    
+    // CAMPO RAG: Vetor numérico semântico gerado pelo text-embedding-004
+    embedding: {
+        type: [Number],
+        default: []
+    },
+    
     createdAt: {
         type: Date,
         default: Date.now
     }
 });
 
-PostSchema.index({ titulo: 'text', desc: 'text', tags: 'text' });
+// Índice de busca textual otimizado para o idioma português
+PostSchema.index(
+    { titulo: 'text', desc: 'text', tags: 'text' },
+    { default_language: "portuguese", name: "BuscaTextualForum" }
+);
 
 module.exports = mongoose.models.Post || mongoose.model('Post', PostSchema);

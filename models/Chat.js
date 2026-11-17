@@ -22,15 +22,21 @@ const MessageSchema = new mongoose.Schema({
     }
 });
 
-// Schema da conversa completa salva no MongoDB Atlas
+// Schema da conversa completa vinculada a uma conta específica
 const ChatSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        index: true // Otimiza a busca do histórico por usuário
+    },
     title: {
         type: String,
         default: "Nova Conversa"
     },
     author: {
         type: String,
-        default: "Aluno PFC Logado"
+        default: "Aluno PFC"
     },
     messages: [MessageSchema],
     createdAt: {

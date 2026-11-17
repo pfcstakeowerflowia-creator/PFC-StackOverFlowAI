@@ -44,7 +44,7 @@
             
             <nav class="nav-buttons" aria-label="Navegação do fórum">
                 <a href="index.html" class="nav-btn secondary-btn"><i class="fas fa-robot" aria-hidden="true"></i> Chat com IA</a>
-                <button class="nav-btn primary-btn" aria-current="page" id="btn-nav-forum"><i class="fas fa-users" aria-hidden="true"></i>  Fórum da Comunidade</button>
+                <button class="nav-btn primary-btn" aria-current="page" id="btn-nav-forum"><i class="fas fa-users" aria-hidden="true"></i> Fórum de Postagem</button>
                 <a href="sobre.html" class="nav-btn secondary-btn"><i class="fas fa-info-circle" aria-hidden="true"></i> Sobre o Projeto</a>
             </nav>
 
@@ -99,19 +99,16 @@
                         </button>
                     </div>
 
-                    <!-- Cabeçalho da Pergunta Stack Overflow (SEM O BOTÃO 'FAZER PERGUNTA') -->
+                    <!-- Cabeçalho da Pergunta Stack Overflow -->
                     <header class="so-page-header">
                         <div class="so-page-header-top">
                             <h1 id="so-thread-title">Título da Dúvida</h1>
                         </div>
-                        <div class="so-page-metadata" id="so-thread-meta">
-                            <!-- Metadados: Perguntado em, Modificado, Vistos -->
-                        </div>
+                        <div class="so-page-metadata" id="so-thread-meta"></div>
                     </header>
 
-                    <!-- Corpo da Pergunta (Coluna de Votos + Texto + Card de Autor) -->
+                    <!-- Corpo da Pergunta -->
                     <div class="so-main-post-layout">
-                        <!-- Coluna Lateral de Votos da Pergunta -->
                         <div class="so-left-vote-gutter">
                             <button class="so-gutter-btn" id="btn-q-upvote" title="Esta pergunta é clara e útil">
                                 <i class="fas fa-caret-up"></i>
@@ -122,17 +119,14 @@
                             </div>
                         </div>
 
-                        <!-- Conteúdo da Pergunta -->
                         <div class="so-right-post-body">
                             <div id="so-question-text" class="so-markdown-content"></div>
                             
-                            <!-- Tags e Rodapé do Post -->
                             <div class="so-post-bottom-bar">
                                 <div class="tags" id="so-question-tags"></div>
                                 
                                 <div class="so-post-actions-and-author">
                                     <div class="so-post-links" id="so-question-admin-actions"></div>
-                                    <!-- Card de Autor Clássico Stack Overflow -->
                                     <div class="so-author-card" id="so-question-author-card"></div>
                                 </div>
                             </div>
@@ -146,7 +140,7 @@
                                 <i class="fas fa-robot text-bot-icon"></i>
                                 <div>
                                     <strong>Resposta da Inteligência Artificial</strong>
-                                    <span class="so-ai-model-tag">Gemini 2.5 Flash + RAG</span>
+                                    <span class="so-ai-model-tag">Gemini 3.8 Flash / 4 + RAG</span>
                                 </div>
                             </div>
                             <button id="btn-generate-ai-thread" class="btn-ia-generate">
@@ -168,7 +162,7 @@
                     <!-- Lista de Respostas da Comunidade + Comentários -->
                     <div id="so-community-answers-list" class="so-answers-container"></div>
 
-                    <!-- Formulário "Sua Resposta" (Your Answer) -->
+                    <!-- Formulário "Sua Resposta" -->
                     <form id="so-form-your-answer" class="so-your-answer-box">
                         <h2>Sua Resposta</h2>
                         <p class="so-answer-hint">Escreva sua solução técnica e inclua trechos de código (suporta formatação Markdown).</p>

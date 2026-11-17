@@ -1,12 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 // Importações dos modelos e do controller
 const chatController = require('../controllers/chatController');
 const Post = require('../models/Post');
 const User = require('../models/User');
+
+// Carregador dinâmico do SDK @google/genai (compatível com ESM + top-level await)
+let _GoogleGenAI = null;
+async function criarClienteGenAI(apiKey) {
+    if (!_GoogleGenAI) {
+        const modulo = await import('@google/genai');
+        _GoogleGenAI = modulo.GoogleGenAI;
+    }
+    return new _GoogleGenAI({ apiKey });
+}
 
 // Função auxiliar para gerar embedding vetorial de forma segura
 async function gerarVetorTexto(texto) {
@@ -16,10 +25,15 @@ async function gerarVetorTexto(texto) {
 
         if (!apiKey) return [];
 
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
-        const resultado = await model.embedContent(texto);
-        return resultado.embedding.values || [];
+        const ai = await criarClienteGenAI(apiKey);
+        const resultado = await ai.models.embedContent({
+            model: "gemini-embedding-2",
+            contents: `Documento de fórum de programação: ${texto}`,
+            config: {
+                outputDimensionality: 768
+            }
+        });
+        return resultado.embeddings?.[0]?.values || [];
     } catch (err) {
         console.warn("⚠️ Aviso: Falha ao gerar embedding para a postagem:", err.message);
         return [];
@@ -30,7 +44,6 @@ async function gerarVetorTexto(texto) {
 // 1. ROTAS DE AUTENTICAÇÃO NO MONGODB ATLAS
 // =================================================================
 
-// Cadastro de novos usuários (Aluno vs Administrador)
 router.post('/auth/register', async (req, res) => {
     try {
         const { nome, email, senha, role, adminCode } = req.body;
@@ -83,7 +96,6 @@ router.post('/auth/register', async (req, res) => {
     }
 });
 
-// Autenticação de usuários existentes
 router.post('/auth/login', async (req, res) => {
     try {
         const { email, senha } = req.body;
@@ -123,23 +135,15 @@ router.post('/auth/login', async (req, res) => {
 // 2. ROTAS DO CHAT COM IA E HISTÓRICO NO MONGODB ATLAS
 // =================================================================
 
-// Enviar mensagem para a IA (RAG Híbrido + Gemini)
 router.post('/chat', chatController.enviarMensagem);
-
-// Listar histórico de conversas para a barra lateral
 router.get('/chats', chatController.listarConversas);
-
-// Obter uma conversa específica pelo ID
 router.get('/chats/:id', chatController.obterConversaPorId);
-
-// Excluir uma conversa salva
 router.delete('/chats/:id', chatController.excluirConversa);
 
 // =================================================================
 // 3. ROTAS DO FÓRUM (PERGUNTAS, VOTAÇÃO E MODERAÇÃO)
 // =================================================================
 
-// Listar todas as postagens (com suporte a filtros: ?filtro=resolvido)
 router.get('/posts', async (req, res) => {
     try {
         const { filtro } = req.query;
@@ -154,7 +158,6 @@ router.get('/posts', async (req, res) => {
     }
 });
 
-// Obter detalhes de uma postagem com todas as respostas e comentários
 router.get('/posts/:id', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -168,7 +171,6 @@ router.get('/posts/:id', async (req, res) => {
     }
 });
 
-// Publicar uma nova pergunta pública no fórum (COM VETORIZAÇÃO RAG AUTOMÁTICA)
 router.post('/posts', async (req, res) => {
     try {
         const { titulo, desc, tags, author } = req.body;
@@ -176,7 +178,6 @@ router.post('/posts', async (req, res) => {
             return res.status(400).json({ error: "Título e descrição são obrigatórios." });
         }
 
-        // 🧠 Gera o vetor semântico (768 dimensões) para o RAG Híbrido
         const textoParaVetor = `${titulo.trim()} - ${desc.trim()}`;
         const embeddingVetor = await gerarVetorTexto(textoParaVetor);
 
@@ -188,7 +189,7 @@ router.post('/posts', async (req, res) => {
             votos: 0,
             statusResolvido: false,
             respostas: [],
-            embedding: embeddingVetor // Vetor salvo no documento do MongoDB Atlas
+            embedding: embeddingVetor
         });
 
         await novoPost.save();
@@ -200,7 +201,6 @@ router.post('/posts', async (req, res) => {
     }
 });
 
-// Votar positivamente em uma postagem (Incremento atômico)
 router.patch('/posts/:id/vote', async (req, res) => {
     try {
         const postAtualizado = await Post.findByIdAndUpdate(
@@ -218,7 +218,6 @@ router.patch('/posts/:id/vote', async (req, res) => {
     }
 });
 
-// Excluir uma postagem do fórum
 router.delete('/posts/:id', async (req, res) => {
     try {
         const postExcluido = await Post.findByIdAndDelete(req.params.id);
@@ -236,7 +235,6 @@ router.delete('/posts/:id', async (req, res) => {
 // 4. ROTAS DE RESPOSTAS, COMENTÁRIOS E IA NO FÓRUM
 // =================================================================
 
-// Adicionar resposta humana de um usuário à dúvida
 router.post('/posts/:id/respostas', async (req, res) => {
     try {
         const { texto, autor, role } = req.body;
@@ -275,7 +273,6 @@ router.post('/posts/:id/respostas', async (req, res) => {
     }
 });
 
-// Adicionar comentário/réplica em uma resposta específica
 router.post('/posts/:postId/respostas/:respostaId/comentarios', async (req, res) => {
     try {
         const { texto, autor, role } = req.body;
@@ -318,7 +315,6 @@ router.post('/posts/:postId/respostas/:respostaId/comentarios', async (req, res)
     }
 });
 
-// Gerar resposta técnica oficial da IA com Gemini para o tópico
 router.post('/posts/:id/gerar-resposta-ia', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -342,8 +338,8 @@ router.post('/posts/:id/gerar-resposta-ia', async (req, res) => {
             return res.status(500).json({ error: "Chave GEMINI_API_KEY não configurada no servidor." });
         }
 
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const modelos = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-1.5-flash"];
+        const ai = await criarClienteGenAI(apiKey);
+        const modelos = ["gemini-3.8-flash", "gemini-4-argon", "gemini-4-carbon", "gemini-3.6-flash"];
 
         const prompt = `Você é o assistente inteligente Overflowia.AI.
 Um estudante publicou a seguinte dúvida técnica no fórum:
@@ -363,13 +359,12 @@ DIRETRIZES:
 
         for (const nomeModelo of modelos) {
             try {
-                const model = genAI.getGenerativeModel({
+                const result = await ai.models.generateContent({
                     model: nomeModelo,
-                    generationConfig: { temperature: 0.7 }
+                    contents: prompt,
+                    config: { temperature: 0.7 }
                 });
-                const result = await model.generateContent(prompt);
-                const response = await result.response;
-                textoIA = response.text();
+                textoIA = result.text;
                 if (textoIA) break;
             } catch (err) {
                 erroIA = err;
@@ -407,7 +402,6 @@ DIRETRIZES:
     }
 });
 
-// Marcar ou Desmarcar Melhor Resposta / Solução Aceita (ATUALIZAÇÃO DE EMBEDDING ENRIQUECIDO)
 router.patch('/posts/:id/respostas/:respId/solucao', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -436,7 +430,6 @@ router.patch('/posts/:id/respostas/:respId/solucao', async (req, res) => {
 
         post.statusResolvido = post.respostas.some(r => r.isMelhorResposta);
 
-        // 🧠 Se foi marcada como solução aprovada, re-vetoriza o post incluindo a solução aprovada
         if (post.statusResolvido && textoMelhorSolucao) {
             try {
                 const textoCompleto = `${post.titulo} - ${post.desc} - Solução: ${textoMelhorSolucao}`;

@@ -1,6 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Verificação de Autenticação e Perfil
+    // 1. Verificação de Autenticação, Perfil e ID da Conta
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const currentUserId = localStorage.getItem('userId');
+    const currentUserName = localStorage.getItem('userName') || 'Aluno PFC';
+
     renderizarPerfilLateral(isLoggedIn);
 
     // 2. Controle de Acessibilidade (Modo de Alto Contraste)
@@ -38,13 +41,20 @@ document.addEventListener("DOMContentLoaded", () => {
     let selectedFile = null;
     let currentChatId = null;
 
-    // 4. Detecção Inteligente de Rota (Funciona em localhost:3000, porta 5500 e servidores em nuvem)
-    // Detecção Inteligente de Rota (Localhost, Netlify ou Render)
+    // 4. Detecção Inteligente de Rota (Localhost, Netlify ou Render)
     const BASE_API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
         ? (window.location.port === '3000' ? '/api' : 'http://localhost:3000/api')
-        : (window.location.hostname.includes('netlify.app') 
-            ? 'https://pfc-stackoverflowai.onrender.com/api' 
+        : (window.location.hostname.includes('netlify.app')
+            ? 'https://pfc-stackoverflowai.onrender.com/api'
             : '/api');
+
+    // Carregamento Inicial do Histórico exclusivo desta conta
+    carregarHistoricoSidebar();
+
+    function toggleSidebar(open) {
+        if (sidebar) sidebar.classList.toggle('open', open);
+        if (overlay) overlay.classList.toggle('active', open);
+    }
 
     if (openSidebarBtn) openSidebarBtn.addEventListener('click', () => toggleSidebar(true));
     if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', () => toggleSidebar(false));
@@ -127,8 +137,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         async function enviarMsgChat() {
-            if (!isLoggedIn) {
-                alert("Você precisa estar logado para interagir com o assistente!");
+            if (!isLoggedIn || !currentUserId) {
+                alert("Faça login para conversar com o assistente e salvar seu histórico pessoal!");
                 window.location.href = 'login.html'; 
                 return;
             }
@@ -172,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <article class="message ai-message" id="${loadingId}">
                 <div class="avatar-ai"><i class="fas fa-robot"></i></div>
                 <div class="message-content">
-                    <p style="color: var(--text-secondary);"><i class="fas fa-circle-notch fa-spin"></i> Consultando base do Fórum (RAG) e salvando no MongoDB...</p>
+                    <p style="color: var(--text-secondary);"><i class="fas fa-circle-notch fa-spin"></i> Consultando base do Fórum (RAG) e salvando na sua conta...</p>
                 </div>
             </article>`);
             msgArea.scrollTop = msgArea.scrollHeight;
@@ -184,7 +194,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     body: JSON.stringify({ 
                         mensagem: msgDigitada,
                         arquivo: backupFileToSend,
-                        chatId: currentChatId
+                        chatId: currentChatId,
+                        userId: currentUserId,      // Vincula à conta atual
+                        userName: currentUserName   // Nome do autor
                     })
                 });
 
@@ -201,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     carregarHistoricoSidebar();
                 }
 
-                // --- MONTAGEM DO CARD VISUAL DE FONTES DO RAG ---
+                // Montagem do Card Visual de Fontes do RAG
                 let fontesHTML = '';
                 if (data.fontesConsultadas && data.fontesConsultadas.length > 0) {
                     fontesHTML = `
@@ -263,20 +275,26 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // 6. Histórico MongoDB no Menu Lateral
+    // 6. Histórico MongoDB Exclusivo do Usuário Logado
     async function carregarHistoricoSidebar() {
         const listContainer = document.getElementById('chat-history-list');
         if (!listContainer) return;
 
+        // Se não estiver logado ou sem ID válido, bloqueia a listagem
+        if (!isLoggedIn || !currentUserId) {
+            listContainer.innerHTML = `<li style="color: var(--text-secondary); font-size: 12px; padding: 8px; line-height: 1.4;">Faça <a href="login.html" style="color: var(--accent-color); text-decoration: underline;">login</a> para ver e salvar seu histórico pessoal.</li>`;
+            return;
+        }
+
         try {
-            const res = await fetch(`${BASE_API}/chats`);
+            const res = await fetch(`${BASE_API}/chats?userId=${encodeURIComponent(currentUserId)}`);
             if (!res.ok) throw new Error("Erro ao buscar histórico");
             const chats = await res.json();
 
             listContainer.innerHTML = '';
 
             if (chats.length === 0) {
-                listContainer.innerHTML = `<li style="color: var(--text-secondary); font-size: 12px; padding: 8px;">Nenhuma conversa anterior salva.</li>`;
+                listContainer.innerHTML = `<li style="color: var(--text-secondary); font-size: 12px; padding: 8px;">Nenhuma conversa salva nesta conta.</li>`;
                 return;
             }
 
@@ -290,8 +308,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 li.style.alignItems = 'center';
 
                 li.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; cursor:pointer;" title="${c.title}">
-                        <i class="far fa-message"></i> <span>${c.title}</span>
+                    <div style="display:flex; align-items:center; gap:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; cursor:pointer;" title="${escaparHTML(c.title)}">
+                        <i class="far fa-message"></i> <span>${escaparHTML(c.title)}</span>
                     </div>
                     <button class="btn-delete-chat" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; padding:4px; transition: color 0.2s;" title="Excluir conversa">
                         <i class="fas fa-trash-alt"></i>
@@ -312,14 +330,15 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
         } catch (err) {
-            listContainer.innerHTML = `<li style="color: #f43f5e; font-size: 11px; padding: 8px;">Falha ao carregar histórico do banco.</li>`;
+            listContainer.innerHTML = `<li style="color: #f43f5e; font-size: 11px; padding: 8px;">Falha ao carregar histórico da conta.</li>`;
         }
     }
 
     async function carregarConversaPorId(id, titulo) {
+        if (!currentUserId) return;
         try {
-            const res = await fetch(`${BASE_API}/chats/${id}`);
-            if (!res.ok) throw new Error("Falha ao abrir a conversa.");
+            const res = await fetch(`${BASE_API}/chats/${id}?userId=${encodeURIComponent(currentUserId)}`);
+            if (!res.ok) throw new Error("Falha ao abrir a conversa ou acesso negado.");
             const chat = await res.json();
 
             currentChatId = chat._id;
@@ -368,15 +387,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function excluirConversa(id) {
-        if (!confirm("Tem certeza de que deseja apagar esta conversa do MongoDB Atlas?")) return;
+        if (!currentUserId) return;
+        if (!confirm("Tem certeza de que deseja apagar esta conversa da sua conta?")) return;
         try {
-            const res = await fetch(`${BASE_API}/chats/${id}`, { method: 'DELETE' });
+            const res = await fetch(`${BASE_API}/chats/${id}?userId=${encodeURIComponent(currentUserId)}`, { method: 'DELETE' });
             if (res.ok) {
                 if (currentChatId === id) {
                     iniciarNovoChat();
                 } else {
                     carregarHistoricoSidebar();
                 }
+            } else {
+                alert("Não foi possível excluir esta conversa.");
             }
         } catch (err) {
             alert("Erro ao excluir conversa: " + err.message);
@@ -390,7 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <article class="message ai-message">
             <div class="avatar-ai" aria-hidden="true"><i class="fas fa-robot"></i></div>
             <div class="message-content">
-                <p>Nova conversa iniciada! Todas as mensagens serão salvas automaticamente na nuvem no <strong>MongoDB Atlas</strong>.</p>
+                <p>Nova conversa iniciada! Todas as mensagens serão salvas automaticamente na sua conta no <strong>MongoDB Atlas</strong>.</p>
             </div>
         </article>`;
         carregarHistoricoSidebar();
